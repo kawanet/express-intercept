@@ -7,7 +7,7 @@ declare class RequestHandlerBuilder {
     private _for;
     for(condition: (req: Request) => boolean): this;
     use(handler: RequestHandler, ...more: RequestHandler[]): RequestHandler;
-    getRequest(inspectFn: (req: Request) => (any | void)): RequestHandler;
+    getRequest(receiver: (req: Request) => (any | void)): RequestHandler;
 }
 declare class ResponseHandlerBuilder extends RequestHandlerBuilder {
     private _if;

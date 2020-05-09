@@ -16,6 +16,12 @@
     "supertest": "^4.0.2",
     "typescript": "^3.8.3"
   },
+  "files": [
+    "LICENSE",
+    "README.md",
+    "types/",
+    "lib/"
+  ],
   "homepage": "https://github.com/kawanet/express-intercept#readme",
   "keywords": [
     "expressjs",
@@ -34,8 +40,8 @@
   },
   "scripts": {
     "fixpack": "fixpack",
-    "test": "./node_modules/.bin/mocha -R spec test/*.js",
-    "tsc": "tsc -p . && tsc -p types",
+    "mocha": "./node_modules/.bin/mocha -R spec test/*.js",
+    "test": "tsc -p . && tsc -p types && npm run mocha",
     "tsc-watch": "tsc --watch"
   },
   "typings": "./types/express-intercept.d.ts"
