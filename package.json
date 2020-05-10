@@ -1,0 +1,42 @@
+{
+  "name": "express-intercept",
+  "description": "Build Express middleware to intercept / replace / inspect / transform response",
+  "version": "0.1.0",
+  "author": "Yusuke Kawasaki <u-suke@kawa.net>",
+  "contributors": [
+    "Yusuke Kawasaki <u-suke@kawa.net>"
+  ],
+  "devDependencies": {
+    "@types/express": "^4.17.6",
+    "@types/mocha": "^7.0.2",
+    "@types/node": "^13.13.4",
+    "@types/supertest": "^2.0.9",
+    "express": "^4.17.1",
+    "mocha": "^7.1.2",
+    "supertest": "^4.0.2",
+    "typescript": "^3.8.3"
+  },
+  "homepage": "https://github.com/kawanet/express-intercept#readme",
+  "keywords": [
+    "expressjs",
+    "inspector",
+    "interceptor",
+    "middleware",
+    "modify",
+    "response",
+    "tamper"
+  ],
+  "license": "MIT",
+  "main": "lib/express-intercept.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kawanet/express-intercept.git"
+  },
+  "scripts": {
+    "fixpack": "fixpack",
+    "test": "./node_modules/.bin/mocha -R spec test/*.js",
+    "tsc": "tsc -p . && tsc -p types",
+    "tsc-watch": "tsc --watch"
+  },
+  "typings": "./types/express-intercept.d.ts"
+}
