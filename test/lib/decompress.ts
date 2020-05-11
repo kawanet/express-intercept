@@ -22,7 +22,7 @@ export function decompress(contentType?: RegExp): RequestHandler {
         // decompress only when compressed
         .if(res => !!(res.getHeader("content-encoding") || res.getHeader("transfer-encoding")))
 
-        .transformStream((req, res) => {
+        .interceptStream((upstream, req, res) => {
 
             // find uncompress transform
             const contentEncoding = match(res.getHeader("content-encoding"));
@@ -34,7 +34,7 @@ export function decompress(contentType?: RegExp): RequestHandler {
             res.removeHeader("transfer-encoding");
             res.removeHeader("content-length");
 
-            return transform();
+            return upstream.pipe(transform());
         });
 }
 

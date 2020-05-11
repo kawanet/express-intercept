@@ -25,7 +25,7 @@ app.use(requestHandler().getRequest(req => console.warn(req.getHeader("cookie"))
 app.use(responseHandlder().getResponse(res => console.warn(res.getHeader("set-cookie"))));
 
 // compress response. see test/lib/compress.ts for real code
-app.use(responseHandler().transformStream(() => zlib.createBrotliCompress()));
+app.use(responseHandler().interceptStream(upstream => upstream.pipe(zlib.createBrotliCompress())));
 ```
 
 ## LICENSE

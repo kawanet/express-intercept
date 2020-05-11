@@ -1,7 +1,7 @@
 // express-intercept.ts
 
 import {Request, RequestHandler, Response} from "express";
-import {Duplex, Writable} from "stream";
+import {PassThrough, Readable, Writable} from "stream";
 import * as zlib from "zlib";
 
 type CallbackFn = (err?: Error) => void;
@@ -75,6 +75,16 @@ class ResponseHandlerBuilder extends RequestHandlerBuilder {
         }));
     }
 
+    interceptStream(interceptor: (upstream: Readable, req: Request, res: Response) => (Readable | Promise<Readable>)): RequestHandler {
+        return super.use(buildResponseHandler(this._if, async (payload, req, res) => {
+            const through = new PassThrough();
+            const readable = await interceptor(through, req, res);
+            if (!readable) return;
+            readable.pipe(res);
+            return through;
+        }));
+    }
+
     getString(receiver: (body: string, req?: Request, res?: Response) => (any | Promise<any>)): RequestHandler {
         return super.use(buildResponseHandler(this._if, async (payload, req, res) => {
             const body = payload.getString();
@@ -98,15 +108,6 @@ class ResponseHandlerBuilder extends RequestHandlerBuilder {
     getResponse(receiver: (res: Response) => (any | Promise<any>)): RequestHandler {
         return super.use(buildResponseHandler(this._if, async (payload, req, res) => {
             await receiver(res);
-        }));
-    }
-
-    transformStream(interceptor: (req: Request, res: Response) => (Duplex | Promise<Duplex>)): RequestHandler {
-        return super.use(buildResponseHandler(this._if, async (payload, req, res) => {
-            const stream = await interceptor(req, res);
-            if (!stream) return;
-            stream.pipe(res);
-            return stream;
         }));
     }
 }

@@ -30,7 +30,7 @@ export function compress(contentType?: RegExp): RequestHandler {
         // ignore when already compressed
         .if(res => !(res.getHeader("content-encoding") || res.getHeader("transfer-encoding")))
 
-        .transformStream((req, res) => {
+        .interceptStream((upstream, req, res) => {
 
             // find compress transform
             const acceptEncoding = match(req.header("accept-encoding"));
@@ -48,7 +48,7 @@ export function compress(contentType?: RegExp): RequestHandler {
 
             res.removeHeader("content-length");
 
-            return transform();
+            return upstream.pipe(transform());
         });
 }
 

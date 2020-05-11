@@ -38,6 +38,10 @@ describe(TITLE, () => {
         throw new Error("replaceBuffer()");
     }));
 
+    test("responseHandler().interceptStream()", responseHandler().interceptStream(() => {
+        throw new Error("interceptStream()");
+    }));
+
     test("responseHandler().getString()", responseHandler().getString(() => {
         throw new Error("getString()");
     }));
@@ -52,10 +56,6 @@ describe(TITLE, () => {
 
     test("responseHandler().getResponse()", responseHandler().getResponse(() => {
         throw new Error("getResponse()");
-    }));
-
-    test("responseHandler().transformStream()", responseHandler().transformStream(() => {
-        throw new Error("transformStream()");
     }));
 
     function test(title: string, mw: RequestHandler) {

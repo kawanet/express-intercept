@@ -51,8 +51,8 @@ describe(TITLE, () => {
         it(name, async () => {
             const app = express();
 
-            app.use(transform || responseHandler().transformStream((req, res) => {
-                return new Transform({
+            app.use(transform || responseHandler().interceptStream((upstream, req, res) => {
+                const transform = new Transform({
                     transform(chunk, encoding, callback) {
                         res.removeHeader("Content-Length");
                         chunk = Buffer.from(replacer(String(chunk)));
@@ -60,6 +60,8 @@ describe(TITLE, () => {
                         callback();
                     }
                 });
+
+                return upstream.pipe(transform);
             }));
 
             app.use(handler);
