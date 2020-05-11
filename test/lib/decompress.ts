@@ -11,12 +11,15 @@ const transforms = {
     deflate: zlib.createInflate,
 } as { [encoding: string]: () => Transform };
 
-export function decompress(): RequestHandler {
+export function decompress(contentType?: RegExp): RequestHandler {
     return responseHandler()
         // compress only when OK
         .if(res => +res.statusCode === 200)
 
-        // uncompress only when compressed
+        // decompress only for types specified
+        .if(res => !contentType || contentType.test(String(res.getHeader("content-type"))))
+
+        // decompress only when compressed
         .if(res => !!(res.getHeader("content-encoding") || res.getHeader("transfer-encoding")))
 
         .transformStream((req, res) => {

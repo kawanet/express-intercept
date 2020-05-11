@@ -13,20 +13,22 @@ const transforms = {
 
 const textTypes = /^text|json|javascript|svg|xml|utf-8/i;
 
-export function compress(): RequestHandler {
+export function compress(contentType?: RegExp): RequestHandler {
+    if (!contentType) contentType = textTypes;
+
     return responseHandler()
 
         // Accept-Encoding: or TE: required
         .for(req => !!(req.header("accept-encoding") || req.header("te")))
 
-        // comppress only text
-        .if(res => textTypes.test(String(res.getHeader("content-type"))))
+        // compress only when OK
+        .if(res => +res.statusCode === 200)
+
+        // comppress only for types specified
+        .if(res => !contentType || contentType.test(String(res.getHeader("content-type"))))
 
         // ignore when already compressed
         .if(res => !(res.getHeader("content-encoding") || res.getHeader("transfer-encoding")))
-
-        // compress only when OK
-        .if(res => +res.statusCode === 200)
 
         .transformStream((req, res) => {
 
