@@ -67,6 +67,7 @@ describe(TITLE, () => {
             await middlewareTest(app)
                 .getString(body => assert.equal(body, expected))
                 .get("/")
+                .expect(200)
                 .expect(expected);
         });
     }

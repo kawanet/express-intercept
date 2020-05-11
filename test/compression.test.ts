@@ -42,11 +42,13 @@ describe(TITLE, () => {
             await middlewareTest(app)
                 .getResponse(res => assert.ok(res.getHeader("content-encoding"))) // gzip or deflate
                 .get("/")
+                .expect(200)
                 .then(res => assert.equal(res.text, content));
 
             await middlewareTest(app)
                 .getString(body => assert.equal(body, content))
                 .get("/")
+                .expect(200)
                 .then(res => assert.equal(res.text, content));
         });
 
@@ -56,11 +58,13 @@ describe(TITLE, () => {
             await middlewareTest(app)
                 .getResponse(res => assert.equal(res.getHeader("content-encoding") || "uncompressed", "uncompressed"))
                 .get("/")
+                .expect(200)
                 .then(res => assert.equal(res.text, content));
 
             await middlewareTest(app)
                 .getString(body => assert.equal(body, content))
                 .get("/")
+                .expect(200)
                 .then(res => assert.equal(res.text, content));
         });
     }
@@ -79,6 +83,7 @@ describe(TITLE, () => {
                 .getBuffer(body => assert.equal(toHEX(body), toHEX(content)))
                 .getResponse(res => assert.equal(res.getHeader("content-encoding") || "uncompressed", "uncompressed"))
                 .get("/")
+                .expect(200)
                 .then(res => assert.equal(toHEX(res.body), toHEX(content)));
         });
 
@@ -88,6 +93,7 @@ describe(TITLE, () => {
             await middlewareTest(app)
                 .getResponse(res => assert.ok(res.getHeader("content-encoding"))) // gzip or deflate
                 .get("/")
+                .expect(200)
                 .then(res => assert.equal(toHEX(res.body), toHEX(content)));
         });
 
@@ -97,11 +103,13 @@ describe(TITLE, () => {
             await middlewareTest(app)
                 .getResponse(res => assert.equal(res.getHeader("content-encoding") || "uncompressed", "uncompressed"))
                 .get("/")
+                .expect(200)
                 .then(res => assert.equal(toHEX(res.body), toHEX(content)));
 
             await middlewareTest(app)
                 .getBuffer(body => assert.equal(toHEX(body), toHEX(content)))
                 .get("/")
+                .expect(200)
                 .then(res => assert.equal(toHEX(res.body), toHEX(content)));
         });
     }
@@ -120,6 +128,7 @@ describe(TITLE, () => {
                 .getString(body => assert.equal(body, format))
                 .getResponse(res => assert.equal(res.getHeader(outgoing), format))
                 .get("/")
+                .expect(200)
                 .expect(outgoing, format);
         });
 
@@ -130,6 +139,7 @@ describe(TITLE, () => {
                 .getString(body => assert.equal(body, format))
                 .getResponse(res => assert.equal(res.getHeader(outgoing) || "uncompressed", "uncompressed"))
                 .get("/")
+                .expect(200)
                 .expect(format);
         });
     }

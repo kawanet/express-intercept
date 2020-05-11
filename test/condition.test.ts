@@ -44,12 +44,12 @@ describe(TITLE, () => {
                 res.send("/");
             }));
 
-            await middlewareTest(app).getString(body => assert.equal(body, "/A/")).get("/A/").expect("/A/");
-            await middlewareTest(app).getString(body => assert.equal(body, "/BC/")).get("/BC/").expect("/BC/");
-            await middlewareTest(app).getString(body => assert.equal(body, "/D/")).get("/D/").expect("/D/");
-            await middlewareTest(app).getString(body => assert.equal(body, "/EF/")).get("/EF/").expect("/EF/");
-            await middlewareTest(app).getString(body => assert.equal(body, "/GH/")).get("/GH/").expect("/GH/");
-            await middlewareTest(app).getString(body => assert.equal(body, "//")).get("/X/").expect("//");
+            await middlewareTest(app).getString(body => assert.equal(body, "/A/")).get("/A/").expect(200).expect("/A/");
+            await middlewareTest(app).getString(body => assert.equal(body, "/BC/")).get("/BC/").expect(200).expect("/BC/");
+            await middlewareTest(app).getString(body => assert.equal(body, "/D/")).get("/D/").expect(200).expect("/D/");
+            await middlewareTest(app).getString(body => assert.equal(body, "/EF/")).get("/EF/").expect(200).expect("/EF/");
+            await middlewareTest(app).getString(body => assert.equal(body, "/GH/")).get("/GH/").expect(200).expect("/GH/");
+            await middlewareTest(app).getString(body => assert.equal(body, "//")).get("/X/").expect(200).expect("//");
         });
     }
 });

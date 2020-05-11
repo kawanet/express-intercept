@@ -24,6 +24,7 @@ describe(TITLE, () => {
                 .getResponse(res => assert.equal(+res.getHeader("content-length"), expected.length))
                 .getBuffer(body => assert.equal(toHEX(body), toHEX(expected)))
                 .get("/")
+                .expect(200)
                 .then(res => assert.equal(toHEX(res.body), toHEX(expected)));
         });
     }
@@ -39,6 +40,7 @@ describe(TITLE, () => {
                 .getResponse(res => assert.equal(+res.getHeader("content-length") | 0, 0))
                 .getBuffer(body => assert.equal(toHEX(body), toHEX(empty)))
                 .get("/")
+                .expect(200)
                 .then(res => assert.equal(toHEX(res.body), toHEX(empty)));
         });
     }
@@ -54,6 +56,7 @@ describe(TITLE, () => {
                 .getResponse(res => assert.equal(+res.getHeader("content-length"), expected.length))
                 .getBuffer(body => assert.equal(toHEX(body), toHEX(expected)))
                 .get("/")
+                .expect(200)
                 .then(res => assert.equal(toHEX(res.body), toHEX(expected)));
         });
     }
