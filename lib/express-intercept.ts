@@ -77,33 +77,33 @@ class ResponseHandlerBuilder extends RequestHandlerBuilder {
     }
 
     replaceString(replacer: (body: string, req?: Request, res?: Response) => (string | Promise<string>)): RequestHandler {
-        return super.use(transformResponse(this._if, interceptStream(async (payload, req, res) => {
+        return super.use(interceptStream(this._if, async (payload, req, res) => {
             let body = payload.getString();
             body = await replacer(body, req, res);
             payload.setString(body);
-        })));
+        }));
     }
 
     replaceBuffer(replacer: (body: Buffer, req?: Request, res?: Response) => (Buffer | Promise<Buffer>)): RequestHandler {
-        return super.use(transformResponse(this._if, interceptStream(async (payload, req, res) => {
+        return super.use(interceptStream(this._if, async (payload, req, res) => {
             let body = payload.getBuffer();
             body = await replacer(body, req, res);
             payload.setBuffer(body);
-        })));
+        }));
     }
 
     getString(receiver: (body: string, req?: Request, res?: Response) => (void | Promise<void>)): RequestHandler {
-        return super.use(transformResponse(this._if, interceptStream(async (payload, req, res) => {
+        return super.use(interceptStream(this._if, async (payload, req, res) => {
             const body = payload.getString();
             await receiver(body, req, res);
-        })));
+        }));
     }
 
     getBuffer(receiver: (body: Buffer, req?: Request, res?: Response) => (void | Promise<void>)): RequestHandler {
-        return super.use(transformResponse(this._if, interceptStream(async (payload, req, res) => {
+        return super.use(interceptStream(this._if, async (payload, req, res) => {
             const body = payload.getBuffer();
             await receiver(body, req, res);
-        })));
+        }));
     }
 
     getRequest(receiver: (req: Request) => (any | void)): RequestHandler {
@@ -119,17 +119,19 @@ class ResponseHandlerBuilder extends RequestHandlerBuilder {
     }
 
     transformStream(transformer: (req: Request, res: Response) => Duplex): RequestHandler {
-        return super.use(transformResponse(this._if, interceptStream(async (payload, req, res) => {
+        return super.use(interceptStream(this._if, async (payload, req, res) => {
             const stream = transformer(req, res);
             if (!stream) return;
             stream.pipe(res);
             return stream;
-        })));
+        }));
     }
 }
 
-function interceptStream(onEnd: (payload: ResponsePayload, req: Request, res: Response) => (Promise<IWritable> | Promise<void>)): (req: Request, res: Response) => IDuplex {
-    return (req, res) => {
+function interceptStream(_if: ((res: Response) => boolean), onEnd: (payload: ResponsePayload, req: Request, res: Response) => (Promise<IWritable> | Promise<void>)): RequestHandler {
+    return interceptResponse((req, res) => {
+        if (!_if(res)) return;
+
         const payload = new ResponsePayload(res);
 
         payload.onEnd = function () {
@@ -137,10 +139,10 @@ function interceptStream(onEnd: (payload: ResponsePayload, req: Request, res: Re
         }
 
         return payload;
-    };
+    });
 }
 
-function transformResponse(_if: ((res: Response) => boolean), interceptor: (req: Request, res: Response) => (IDuplex | void)): RequestHandler {
+function transformResponse(_if: ((res: Response) => boolean), interceptor: (req: Request, res: Response) => void): RequestHandler {
     return interceptResponse((req, res) => {
         if (!_if(res)) return;
 
