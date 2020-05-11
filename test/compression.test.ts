@@ -32,77 +32,36 @@ describe(TITLE, () => {
         });
     }
 
-    test("accept-encoding", "te", "content-encoding");
+    test("gzip", "accept-encoding", "te", "content-encoding");
+    test("gzip", "te", "accept-encoding", "transfer-encoding");
 
-    test("te", "accept-encoding", "transfer-encoding");
+    test("deflate", "accept-encoding", "te", "content-encoding");
+    test("deflate", "te", "accept-encoding", "transfer-encoding");
 
+    test("br", "accept-encoding", "te", "content-encoding");
+    test("br", "te", "accept-encoding", "transfer-encoding");
 });
 
-function test(incoming: string, removing: string, outgoing: string) {
-
+function test(format: string, incoming: string, removing: string, outgoing: string) {
     {
-        it(outgoing + ": gzip", async () => {
-            let app = express();
-            app.use(requestHandler().getRequest(req => req.headers[incoming] = "gzip"));
-            app.use(requestHandler().getRequest(req => delete req.headers[removing]));
-            app.use(compress());
-            app.use(responseHandler(incoming));
+        let app = express();
+        app.use(requestHandler().getRequest(req => req.headers[incoming] = format));
+        app.use(requestHandler().getRequest(req => delete req.headers[removing]));
+        app.use(compress());
+        app.use(responseHandler(incoming));
 
+        it(outgoing + ": " + format, async () => {
             await middlewareTest(app)
-                .getString(body => assert.equal(body, "gzip"))
-                .getResponse(res => assert.equal(res.getHeader(outgoing), "gzip"))
-                .get("/");
+                .getString(body => assert.equal(body, format))
+                .getResponse(res => assert.equal(res.getHeader(outgoing), format))
+                .get("/").expect(outgoing, format);
 
             app = express().use(decompress(), app);
 
             await middlewareTest(app)
-                .getString(body => assert.equal(body, "gzip"))
+                .getString(body => assert.equal(body, format))
                 .getResponse(res => assert.equal(res.getHeader(outgoing), undefined))
-                .get("/").expect("gzip");
-        });
-    }
-
-    {
-        it(outgoing + ": deflate", async () => {
-            let app = express();
-            app.use(requestHandler().getRequest(req => req.headers[incoming] = "deflate"));
-            app.use(requestHandler().getRequest(req => delete req.headers[removing]));
-            app.use(compress());
-            app.use(responseHandler(incoming));
-
-            await middlewareTest(app)
-                .getString(body => assert.equal(body, "deflate"))
-                .getResponse(res => assert.equal(res.getHeader(outgoing), "deflate"))
-                .get("/");
-
-            app = express().use(decompress(), app);
-
-            await middlewareTest(app)
-                .getString(body => assert.equal(body, "deflate"))
-                .getResponse(res => assert.equal(res.getHeader(outgoing), undefined))
-                .get("/").expect("deflate");
-        });
-    }
-
-    {
-        it(outgoing + ": br", async () => {
-            let app = express();
-            app.use(requestHandler().getRequest(req => req.headers[incoming] = "br"));
-            app.use(requestHandler().getRequest(req => delete req.headers[removing]));
-            app.use(compress());
-            app.use(responseHandler(incoming));
-
-            await middlewareTest(app)
-                .getString(body => assert.equal(body, "br"))
-                .getResponse(res => assert.equal(res.getHeader(outgoing), "br"))
-                .get("/");
-
-            app = express().use(decompress(), app);
-
-            await middlewareTest(app)
-                .getString(body => assert.equal(body, "br"))
-                .getResponse(res => assert.equal(res.getHeader(outgoing), undefined))
-                .get("/").expect("br");
+                .get("/").expect(format);
         });
     }
 }
