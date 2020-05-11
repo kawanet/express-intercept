@@ -30,13 +30,11 @@ export const requestHandler = () => new RequestHandlerBuilder();
 
 export const responseHandler = () => new ResponseHandlerBuilder();
 
-const TRUE = () => true;
-
 class RequestHandlerBuilder {
-    private _for = TRUE as ((req: Request) => boolean);
+    private _for: ((req: Request) => boolean);
 
     for(condition: (req: Request) => boolean): this {
-        if (condition) this._for = AND<Request>(this._for, condition);
+        this._for = (this._for && condition) ? AND<Request>(this._for, condition) : (this._for || condition);
         return this;
     }
 
@@ -64,11 +62,11 @@ class RequestHandlerBuilder {
 }
 
 class ResponseHandlerBuilder extends RequestHandlerBuilder {
-    private _if = TRUE as ((res: Response) => boolean);
+    private _if: ((res: Response) => boolean);
     use: never;
 
     if(condition: (res: Response) => boolean): this {
-        if (condition) this._if = AND<Response>(this._if, condition);
+        this._if = (this._if && condition) ? AND<Response>(this._if, condition) : (this._if || condition);
         return this;
     }
 
@@ -126,8 +124,7 @@ function interceptHandler(
     onEnd?: (payload: ResponsePayload, req: Request, res: Response) => (Promise<IWritable | void>)
 ): RequestHandler {
     return interceptResponseStream((req, res) => {
-        if (!_if) return;
-        if (!_if(res)) return;
+        if (_if && !_if(res)) return;
 
         if (onStart) onStart(req, res);
 
@@ -317,9 +314,9 @@ class ResponsePayload implements IWritable {
  */
 
 function AND<T>(A: CondFn<T>, B: CondFn<T>): CondFn<T> {
-    return (arg: T) => A(arg) && B(arg);
+    return (arg: T) => (A(arg) && B(arg));
 }
 
-function JOIN(a: RequestHandler, b: RequestHandler): RequestHandler {
-    return (req, res, next) => a(req, res, err => (err ? next(err) : b(req, res, next)));
+function JOIN(A: RequestHandler, B: RequestHandler): RequestHandler {
+    return (req, res, next) => A(req, res, err => (err ? next(err) : B(req, res, next)));
 }
