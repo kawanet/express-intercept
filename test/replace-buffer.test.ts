@@ -14,9 +14,9 @@ describe(TITLE, () => {
     const expected = Buffer.from("XYZ");
 
     {
-        it("replace", async () => {
+        it("replaceBuffer", async () => {
             const app = express();
-            app.use(responseHandler().replaceBuffer(buf => expected));
+            app.use(responseHandler().replaceBuffer(() => expected));
             app.use((req, res) => res.type("application/octet-stream").end(source))
 
             await middlewareTest(app)
@@ -30,9 +30,25 @@ describe(TITLE, () => {
     }
 
     {
-        it("to empty", async () => {
+        it("replaceBuffer async", async () => {
             const app = express();
-            app.use(responseHandler().replaceBuffer(buf => empty));
+            app.use(responseHandler().replaceBuffer(async () => expected));
+            app.use((req, res) => res.type("application/octet-stream").end(source))
+
+            await middlewareTest(app)
+                .getResponse(res => assert.equal(+res.statusCode, 200))
+                .getResponse(res => assert.equal(+res.getHeader("content-length"), expected.length))
+                .getBuffer(body => assert.equal(toHEX(body), toHEX(expected)))
+                .get("/")
+                .expect(200)
+                .then(res => assert.equal(toHEX(res.body), toHEX(expected)));
+        });
+    }
+
+    {
+        it("replaceBuffer to empty", async () => {
+            const app = express();
+            app.use(responseHandler().replaceBuffer(async() => empty));
             app.use((req, res) => res.type("application/octet-stream").send(source))
 
             await middlewareTest(app)
@@ -46,9 +62,9 @@ describe(TITLE, () => {
     }
 
     {
-        it("from empty", async () => {
+        it("replaceBuffer from empty", async () => {
             const app = express();
-            app.use(responseHandler().replaceBuffer(buf => expected));
+            app.use(responseHandler().replaceBuffer(async() => expected));
             app.use((req, res) => res.type("application/octet-stream").send(empty))
 
             await middlewareTest(app)

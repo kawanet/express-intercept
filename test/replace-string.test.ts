@@ -14,7 +14,7 @@ describe(TITLE, () => {
     const expected = "Hello, John!";
 
     {
-        it("replace", async () => {
+        it("replaceString", async () => {
             const app = express();
             app.use(responseHandler().replaceString(str => str.replace("{{name}}", "John")));
             app.use((req, res) => res.send(source))
@@ -30,9 +30,25 @@ describe(TITLE, () => {
     }
 
     {
-        it("to empty", async () => {
+        it("replaceString async", async () => {
             const app = express();
-            app.use(responseHandler().replaceString(str => empty));
+            app.use(responseHandler().replaceString(async str => str.replace("{{name}}", "John")));
+            app.use((req, res) => res.send(source))
+
+            await middlewareTest(app)
+                .getResponse(res => assert.equal(+res.statusCode, 200))
+                .getResponse(res => assert.equal(+res.getHeader("content-length"), expected.length))
+                .getString(body => assert.equal(body, expected))
+                .get("/")
+                .expect(200)
+                .then(res => assert.equal(res.text, expected));
+        });
+    }
+
+    {
+        it("replaceString to empty", async () => {
+            const app = express();
+            app.use(responseHandler().replaceString(async () => empty));
             app.use((req, res) => res.send(source))
 
             await middlewareTest(app)
@@ -46,9 +62,9 @@ describe(TITLE, () => {
     }
 
     {
-        it("from empty", async () => {
+        it("replaceString from empty", async () => {
             const app = express();
-            app.use(responseHandler().replaceString(str => expected));
+            app.use(responseHandler().replaceString(async () => expected));
             app.use((req, res) => res.send(empty))
 
             await middlewareTest(app)

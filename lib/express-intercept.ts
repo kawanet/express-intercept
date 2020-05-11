@@ -43,7 +43,7 @@ class RequestHandlerBuilder {
         return buildRequestHandler(this._for, handler);
     }
 
-    getRequest(receiver: (req: Request) => (any | void)): RequestHandler {
+    getRequest(receiver: (req: Request) => (any | Promise<any>)): RequestHandler {
         return (req, res, next) => {
             return Promise.resolve().then(() => receiver(req)).then(() => next(), next);
         }
@@ -75,35 +75,35 @@ class ResponseHandlerBuilder extends RequestHandlerBuilder {
         }));
     }
 
-    getString(receiver: (body: string, req?: Request, res?: Response) => (void | Promise<void>)): RequestHandler {
+    getString(receiver: (body: string, req?: Request, res?: Response) => (any | Promise<any>)): RequestHandler {
         return super.use(buildResponseHandler(this._if, async (payload, req, res) => {
             const body = payload.getString();
             await receiver(body, req, res);
         }));
     }
 
-    getBuffer(receiver: (body: Buffer, req?: Request, res?: Response) => (void | Promise<void>)): RequestHandler {
+    getBuffer(receiver: (body: Buffer, req?: Request, res?: Response) => (any | Promise<any>)): RequestHandler {
         return super.use(buildResponseHandler(this._if, async (payload, req, res) => {
             const body = payload.getBuffer();
             await receiver(body, req, res);
         }));
     }
 
-    getRequest(receiver: (req: Request) => (any | void)): RequestHandler {
+    getRequest(receiver: (req: Request) => (any | Promise<any>)): RequestHandler {
         return super.use(buildResponseHandler(this._if, async (payload, req, res) => {
-            receiver(req);
+            await receiver(req);
         }));
     }
 
-    getResponse(receiver: (res: Response) => (any | void)): RequestHandler {
+    getResponse(receiver: (res: Response) => (any | Promise<any>)): RequestHandler {
         return super.use(buildResponseHandler(this._if, async (payload, req, res) => {
-            receiver(res);
+            await receiver(res);
         }));
     }
 
-    transformStream(interceptor: (req: Request, res: Response) => Duplex): RequestHandler {
+    transformStream(interceptor: (req: Request, res: Response) => (Duplex | Promise<Duplex>)): RequestHandler {
         return super.use(buildResponseHandler(this._if, async (payload, req, res) => {
-            const stream = interceptor(req, res);
+            const stream = await interceptor(req, res);
             if (!stream) return;
             stream.pipe(res);
             return stream;
