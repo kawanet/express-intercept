@@ -46,17 +46,12 @@ class RequestHandlerBuilder {
         // NOP
         if (!handler) handler = (req, res, next) => next();
 
-        let _for = this._for;
-        if (!_for) return handler;
-
-        return (req, res, next) => {
-            Promise.resolve().then(() => _for(req)).then(ok => (ok ? handler(req, res, next) : next()), next);
-        };
+        return buildRequestHandler(this._for, handler);
     }
 
     getRequest(receiver: (req: Request) => (any | void)): RequestHandler {
         return (req, res, next) => {
-            Promise.resolve().then(() => receiver(req)).then(() => next(), next);
+            return Promise.resolve().then(() => receiver(req)).then(() => next(), next);
         }
     }
 }
@@ -71,7 +66,7 @@ class ResponseHandlerBuilder extends RequestHandlerBuilder {
     }
 
     replaceString(replacer: (body: string, req?: Request, res?: Response) => (string | Promise<string>)): RequestHandler {
-        return super.use(interceptHandler(this._if, null, async (payload, req, res) => {
+        return super.use(buildResponseHandler(this._if, null, async (payload, req, res) => {
             let body = payload.getString();
             body = await replacer(body, req, res);
             payload.setString(body);
@@ -79,7 +74,7 @@ class ResponseHandlerBuilder extends RequestHandlerBuilder {
     }
 
     replaceBuffer(replacer: (body: Buffer, req?: Request, res?: Response) => (Buffer | Promise<Buffer>)): RequestHandler {
-        return super.use(interceptHandler(this._if, null, async (payload, req, res) => {
+        return super.use(buildResponseHandler(this._if, null, async (payload, req, res) => {
             let body = payload.getBuffer();
             body = await replacer(body, req, res);
             payload.setBuffer(body);
@@ -87,29 +82,29 @@ class ResponseHandlerBuilder extends RequestHandlerBuilder {
     }
 
     getString(receiver: (body: string, req?: Request, res?: Response) => (void | Promise<void>)): RequestHandler {
-        return super.use(interceptHandler(this._if, null, async (payload, req, res) => {
+        return super.use(buildResponseHandler(this._if, null, async (payload, req, res) => {
             const body = payload.getString();
             await receiver(body, req, res);
         }));
     }
 
     getBuffer(receiver: (body: Buffer, req?: Request, res?: Response) => (void | Promise<void>)): RequestHandler {
-        return super.use(interceptHandler(this._if, null, async (payload, req, res) => {
+        return super.use(buildResponseHandler(this._if, null, async (payload, req, res) => {
             const body = payload.getBuffer();
             await receiver(body, req, res);
         }));
     }
 
     getRequest(receiver: (req: Request) => (any | void)): RequestHandler {
-        return super.use(interceptHandler(this._if, (req, res) => receiver(req)));
+        return super.use(buildResponseHandler(this._if, (req, res) => receiver(req)));
     }
 
     getResponse(receiver: (res: Response) => (any | void)): RequestHandler {
-        return super.use(interceptHandler(this._if, (req, res) => receiver(res)));
+        return super.use(buildResponseHandler(this._if, (req, res) => receiver(res)));
     }
 
     transformStream(transformer: (req: Request, res: Response) => Duplex): RequestHandler {
-        return super.use(interceptHandler(this._if, null, async (payload, req, res) => {
+        return super.use(buildResponseHandler(this._if, null, async (payload, req, res) => {
             const stream = transformer(req, res);
             if (!stream) return;
             stream.pipe(res);
@@ -118,7 +113,20 @@ class ResponseHandlerBuilder extends RequestHandlerBuilder {
     }
 }
 
-function interceptHandler(
+function buildRequestHandler(
+    _for: ((req: Request) => boolean),
+    handler: RequestHandler
+): RequestHandler {
+    // without _for condition
+    if (!_for) return handler;
+
+    // with _for condition
+    return (req, res, next) => {
+        return Promise.resolve().then(() => _for(req)).then(ok => (ok ? handler(req, res, next) : next()), next);
+    };
+}
+
+function buildResponseHandler(
     _if: (res: Response) => boolean,
     onStart: (req: Request, res: Response) => (any | void),
     onEnd?: (payload: ResponsePayload, req: Request, res: Response) => (Promise<IWritable | void>)
@@ -171,7 +179,7 @@ function interceptResponseStream(
             }
         };
 
-        next();
+        return next();
 
         function start() {
             started = true;
@@ -214,6 +222,7 @@ class ResponsePayload implements IWritable {
         Promise.resolve()
             .then(() => this.onEnd())
             .then(stream => this.pipe(stream || this.res))
+            .then(() => this.res = null)
             .then(() => cb(), cb);
     }
 
