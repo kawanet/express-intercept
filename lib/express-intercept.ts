@@ -1,7 +1,7 @@
 // express-intercept.ts
 
 import {Request, RequestHandler, Response} from "express";
-import {Duplex} from "stream";
+import {Duplex, Writable} from "stream";
 import * as zlib from "zlib";
 
 type CallbackFn = (err?: Error) => void;
@@ -19,12 +19,6 @@ const encoders = {
     gzip: zlib.gzipSync,
     deflate: zlib.deflateSync,
 } as { [encoding: string]: (buf: Buffer) => Buffer };
-
-interface IWritable {
-    write(chunk: any, encoding?: string, cb?: CallbackFn): boolean;
-
-    end(chunk?: any, encoding?: string, cb?: CallbackFn): void;
-}
 
 export const requestHandler = () => new RequestHandlerBuilder();
 
@@ -66,7 +60,7 @@ class ResponseHandlerBuilder extends RequestHandlerBuilder {
     }
 
     replaceString(replacer: (body: string, req?: Request, res?: Response) => (string | Promise<string>)): RequestHandler {
-        return super.use(buildResponseHandler(this._if, null, async (payload, req, res) => {
+        return super.use(buildResponseHandler(this._if, async (payload, req, res) => {
             let body = payload.getString();
             body = await replacer(body, req, res);
             payload.setString(body);
@@ -74,7 +68,7 @@ class ResponseHandlerBuilder extends RequestHandlerBuilder {
     }
 
     replaceBuffer(replacer: (body: Buffer, req?: Request, res?: Response) => (Buffer | Promise<Buffer>)): RequestHandler {
-        return super.use(buildResponseHandler(this._if, null, async (payload, req, res) => {
+        return super.use(buildResponseHandler(this._if, async (payload, req, res) => {
             let body = payload.getBuffer();
             body = await replacer(body, req, res);
             payload.setBuffer(body);
@@ -82,30 +76,34 @@ class ResponseHandlerBuilder extends RequestHandlerBuilder {
     }
 
     getString(receiver: (body: string, req?: Request, res?: Response) => (void | Promise<void>)): RequestHandler {
-        return super.use(buildResponseHandler(this._if, null, async (payload, req, res) => {
+        return super.use(buildResponseHandler(this._if, async (payload, req, res) => {
             const body = payload.getString();
             await receiver(body, req, res);
         }));
     }
 
     getBuffer(receiver: (body: Buffer, req?: Request, res?: Response) => (void | Promise<void>)): RequestHandler {
-        return super.use(buildResponseHandler(this._if, null, async (payload, req, res) => {
+        return super.use(buildResponseHandler(this._if, async (payload, req, res) => {
             const body = payload.getBuffer();
             await receiver(body, req, res);
         }));
     }
 
     getRequest(receiver: (req: Request) => (any | void)): RequestHandler {
-        return super.use(buildResponseHandler(this._if, (req, res) => receiver(req)));
+        return super.use(buildResponseHandler(this._if, async (payload, req, res) => {
+            receiver(req);
+        }));
     }
 
     getResponse(receiver: (res: Response) => (any | void)): RequestHandler {
-        return super.use(buildResponseHandler(this._if, (req, res) => receiver(res)));
+        return super.use(buildResponseHandler(this._if, async (payload, req, res) => {
+            receiver(res);
+        }));
     }
 
-    transformStream(transformer: (req: Request, res: Response) => Duplex): RequestHandler {
-        return super.use(buildResponseHandler(this._if, null, async (payload, req, res) => {
-            const stream = transformer(req, res);
+    transformStream(interceptor: (req: Request, res: Response) => Duplex): RequestHandler {
+        return super.use(buildResponseHandler(this._if, async (payload, req, res) => {
+            const stream = interceptor(req, res);
             if (!stream) return;
             stream.pipe(res);
             return stream;
@@ -113,133 +111,127 @@ class ResponseHandlerBuilder extends RequestHandlerBuilder {
     }
 }
 
-function buildRequestHandler(
-    _for: ((req: Request) => boolean),
-    handler: RequestHandler
-): RequestHandler {
+function buildRequestHandler(_for: ((req: Request) => boolean), handler: RequestHandler): RequestHandler {
     // without _for condition
     if (!_for) return handler;
 
     // with _for condition
     return (req, res, next) => {
-        return Promise.resolve().then(() => _for(req)).then(ok => (ok ? handler(req, res, next) : next()), next);
+        return _for(req) ? handler(req, res, next) : next();
     };
 }
 
-function buildResponseHandler(
-    _if: (res: Response) => boolean,
-    onStart: (req: Request, res: Response) => (any | void),
-    onEnd?: (payload: ResponsePayload, req: Request, res: Response) => (Promise<IWritable | void>)
-): RequestHandler {
-    return interceptResponseStream((req, res) => {
-        if (_if && !_if(res)) return;
-
-        if (onStart) onStart(req, res);
-
-        if (!onEnd) return;
-
-        const payload = new ResponsePayload(res);
-
-        payload.onEnd = function () {
-            return onEnd(this, req, res);
-        };
-
-        return payload;
-    });
-}
-
-function interceptResponseStream(
-    interceptor: (req: Request, res: Response) => (IWritable | void)
-): RequestHandler {
+function buildResponseHandler(_if: (res: Response) => boolean, interceptor?: (payload: ResponsePayload, req: Request, res: Response) => (Promise<Writable | void>)): RequestHandler {
     return (req, res, next) => {
-        let original: IWritable = {write: res.write, end: res.end};
-        let stream: IWritable;
+        const queue = [] as ChunkItem[];
         let started: boolean;
-        let closed: boolean;
+        let stopped: boolean;
+        let error: boolean;
 
-        const _write = res.write = function (chunk: any, encoding?: any, cb?: CallbackFn) {
+        const original_write = res.write;
+        const intercept_write = res.write = function (chunk: any, encoding?: any, cb?: CallbackFn) {
             if (!started) start();
+            if (stopped) return original_write.apply(this, arguments);
 
-            if (stream) {
-                return stream.write.apply(stream, arguments);
-            } else {
-                return original.write.apply(this, arguments);
-            }
+            const item = [].slice.call(arguments);
+            if ("function" === typeof item[item.length - 1]) cb = item.pop();
+            if (item[0]) queue.push(item);
+            if (cb) cb(); // received
+            return true;
         };
 
-        const _end = res.end = function (chunk?: any, encoding?: any, cb?: CallbackFn) {
+        const original_end = res.end;
+        const intercept_end = res.end = function (chunk?: any, encoding?: any, cb?: CallbackFn) {
             if (!started) start();
-            const s = stream;
-            if (!closed) close();
+            const _stopped = stopped;
+            if (!stopped) stop();
+            if (_stopped) return original_end.apply(this, arguments);
 
-            if (s) {
-                return s.end.apply(s, arguments);
-            } else {
-                return original.end.apply(this, arguments);
-            }
+            const item = [].slice.call(arguments);
+            if ("function" === typeof item[item.length - 1]) cb = item.pop();
+            if (item[0]) queue.push(item);
+            finish(cb);
+            return this;
         };
 
         return next();
 
         function start() {
             started = true;
-            if (interceptor) stream = interceptor(req, res) || null;
-            if (!stream) close();
+
+            try {
+                if (_if && !_if(res)) return stop();
+            } catch (e) {
+                error = true;
+            }
         }
 
-        function close() {
-            closed = true;
-            stream = null;
-            if (res.write === _write) res.write = original.write as any;
-            if (res.end === _end) res.end = original.end as any;
+        function stop() {
+            stopped = true;
+
+            // restore to the original methods
+            if (res.write === intercept_write) res.write = original_write;
+            if (res.end === intercept_end) res.end = original_end;
+        }
+
+        async function finish(cb: CallbackFn) {
+            const payload = new ResponsePayload(res, queue);
+            let dest: Writable;
+
+            try {
+                if (!error && interceptor) dest = await interceptor(payload, req, res) || null;
+            } catch (e) {
+                error = true;
+            }
+
+            if (error) {
+                res.status(500);
+                payload.setBuffer(Buffer.of()); // empty
+                res.end();
+            } else {
+                send(payload.queue, (dest || res), cb);
+            }
         }
     };
 }
 
-class ResponsePayload implements IWritable {
-    private queue: ChunkItem[] = [];
+function send(queue: ChunkItem[], dest: Writable, cb: CallbackFn) {
+    let error: Error;
 
-    onEnd: () => Promise<IWritable | void>;
-
-    constructor(private res: Response) {
-        //
-    }
-
-    write(chunk: any, encoding?: any, cb?: CallbackFn) {
-        const item = [].slice.call(arguments);
-        if ("function" === typeof item[item.length - 1]) cb = item.pop();
-        if (item[0]) this.queue.push(item);
-        if (cb) cb();
-        return true;
-    }
-
-    end(chunk?: any, encoding?: any, cb?: CallbackFn) {
-        const item = [].slice.call(arguments);
-        if ("function" === typeof item[item.length - 1]) cb = item.pop();
-        if (item[0]) this.queue.push(item);
-        if (!cb) cb = () => null;
-
-        Promise.resolve()
-            .then(() => this.onEnd())
-            .then(stream => this.pipe(stream || this.res))
-            .then(() => this.res = null)
-            .then(() => cb(), cb);
-    }
-
-    async pipe(stream: IWritable): Promise<IWritable> {
-        const {queue} = this;
-        let error: Error;
-        const catchError = (e: Error) => (error = (error || e));
-
+    try {
         queue.forEach(item => {
-            if (!error) stream.write(item[0], item[1], catchError);
+            if (!error) dest.write(item[0], item[1], catchError);
         });
+    } catch (e) {
+        catchError(e);
+    }
 
-        await stream.end(catchError);
+    // close stream even on error
+    try {
+        dest.end(sendResult);
+    } catch (e) {
+        catchError(e);
+    }
 
-        if (error) return Promise.reject(error);
+    if (cb) cb(); // success callback
 
-        return stream;
+    function catchError(e: Error) {
+        error = error || e;
+    }
+
+    function sendResult(e: Error) {
+        if (cb) cb(e || error);
+        cb = null; // callback only once
+    }
+}
+
+class ResponsePayload {
+    private res: Response;
+    queue: ChunkItem[];
+
+    constructor(res: Response, queue?: ChunkItem[]) {
+        this.res = res;
+        this.queue = queue || [];
     }
 
     getBuffer(): Buffer {

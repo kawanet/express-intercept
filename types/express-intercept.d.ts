@@ -19,6 +19,6 @@ declare class ResponseHandlerBuilder extends RequestHandlerBuilder {
     getBuffer(receiver: (body: Buffer, req?: Request, res?: Response) => (void | Promise<void>)): RequestHandler;
     getRequest(receiver: (req: Request) => (any | void)): RequestHandler;
     getResponse(receiver: (res: Response) => (any | void)): RequestHandler;
-    transformStream(transformer: (req: Request, res: Response) => Duplex): RequestHandler;
+    transformStream(interceptor: (req: Request, res: Response) => Duplex): RequestHandler;
 }
 export {};
