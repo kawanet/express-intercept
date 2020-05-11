@@ -10,7 +10,7 @@ import {decompress} from "./lib/decompress";
 
 const TITLE = __filename.split("/").pop();
 
-const responseHandler = (key: string) => requestHandler().use((req, res) => res.type("html").send(req.headers[key] || "-"));
+const responseHeader = (key: string) => requestHandler().use((req, res) => res.type("html").send(req.headers[key] || "-"));
 
 const responseText = (body: string) => requestHandler().use((req, res) => res.type("text/plain").send(body));
 
@@ -111,7 +111,7 @@ describe(TITLE, () => {
         router.use(requestHandler().getRequest(req => req.headers[incoming] = format));
         router.use(requestHandler().getRequest(req => delete req.headers[removing]));
         router.use(compress());
-        router.use(responseHandler(incoming));
+        router.use(responseHeader(incoming));
 
         it(outgoing + ": " + format + " compression", async () => {
             const app = express().use(router);

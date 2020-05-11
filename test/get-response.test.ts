@@ -32,7 +32,8 @@ describe(TITLE, () => {
                 .getRequest(req => assert.equal(req.headers["x-req-req"], "A"))
                 .getRequest(req => assert.equal(req.headers["x-req-res"], "B"))
                 .getResponse(res => assert.equal(res.getHeader("x-res-res"), "D"))
-                .get("/");
+                .get("/")
+                .expect("A---");
         });
     }
 
@@ -50,7 +51,8 @@ describe(TITLE, () => {
                 .getString(body => assert.equal(body, "FOO"))
                 .getResponse(res => assert.equal(res.getHeader("x-string") as string, "FOO"))
                 .getResponse(res => assert.equal(res.getHeader("x-buffer") as string, Buffer.from("FOO").toString("hex")))
-                .get("/");
+                .get("/")
+                .expect("FOO");
         });
     }
 });

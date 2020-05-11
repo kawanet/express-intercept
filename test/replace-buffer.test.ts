@@ -17,13 +17,14 @@ describe(TITLE, () => {
         it("replace", async () => {
             const app = express();
             app.use(responseHandler().replaceBuffer(buf => expected));
-            app.use((req, res) => res.end(source))
+            app.use((req, res) => res.type("application/octet-stream").end(source))
 
             await middlewareTest(app)
                 .getResponse(res => assert.equal(+res.statusCode, 200))
                 .getResponse(res => assert.equal(+res.getHeader("content-length"), expected.length))
                 .getBuffer(body => assert.equal(toHEX(body), toHEX(expected)))
-                .get("/");
+                .get("/")
+                .then(res => assert.equal(toHEX(res.body), toHEX(expected)));
         });
     }
 
@@ -31,13 +32,14 @@ describe(TITLE, () => {
         it("to empty", async () => {
             const app = express();
             app.use(responseHandler().replaceBuffer(buf => empty));
-            app.use((req, res) => res.send(source))
+            app.use((req, res) => res.type("application/octet-stream").send(source))
 
             await middlewareTest(app)
                 .getResponse(res => assert.equal(+res.statusCode, 200))
                 .getResponse(res => assert.equal(+res.getHeader("content-length") | 0, 0))
                 .getBuffer(body => assert.equal(toHEX(body), toHEX(empty)))
-                .get("/");
+                .get("/")
+                .then(res => assert.equal(toHEX(res.body), toHEX(empty)));
         });
     }
 
@@ -45,17 +47,18 @@ describe(TITLE, () => {
         it("from empty", async () => {
             const app = express();
             app.use(responseHandler().replaceBuffer(buf => expected));
-            app.use((req, res) => res.send(empty))
+            app.use((req, res) => res.type("application/octet-stream").send(empty))
 
             await middlewareTest(app)
                 .getResponse(res => assert.equal(+res.statusCode, 200))
                 .getResponse(res => assert.equal(+res.getHeader("content-length"), expected.length))
                 .getBuffer(body => assert.equal(toHEX(body), toHEX(expected)))
-                .get("/");
+                .get("/")
+                .then(res => assert.equal(toHEX(res.body), toHEX(expected)));
         });
     }
 });
 
 function toHEX(buf: Buffer) {
-    return Buffer.from(buf).toString("hex");
+    return Buffer.from(buf).toString("hex") || "(empty)";
 }

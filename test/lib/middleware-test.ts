@@ -24,27 +24,27 @@ export class MiddlewareTest {
         return this;
     }
 
-    getString(tester: (str: string) => any): this {
+    getString(test: (str: string) => any): this {
         return this.use(responseHandler().getString((str, req, res) => {
-            return Promise.resolve(str).then(tester).catch(err => catchError(err, req, res));
+            return Promise.resolve(str).then(test).catch(err => catchError(err, req, res));
         }));
     }
 
-    getBuffer(tester: (buf: Buffer) => any): this {
+    getBuffer(test: (buf: Buffer) => any): this {
         return this.use(responseHandler().getBuffer((buf, req, res) => {
-            return Promise.resolve(buf).then(tester).catch(err => catchError(err, req, res));
+            return Promise.resolve(buf).then(test).catch(err => catchError(err, req, res));
         }));
     }
 
-    getRequest(teseter: (req: Request) => any): this {
+    getRequest(test: (req: Request) => any): this {
         return this.use(responseHandler().getBuffer((buf, req, res) => {
-            return Promise.resolve().then(() => teseter(req)).catch(err => catchError(err, req, res));
+            return Promise.resolve().then(() => test(req)).catch(err => catchError(err, req, res));
         }));
     }
 
-    getResponse(teseter: (res: Response) => any): this {
+    getResponse(test: (res: Response) => any): this {
         return this.use(responseHandler().getBuffer((buf, req, res) => {
-            return Promise.resolve().then(() => teseter(res)).catch(err => catchError(err, req, res));
+            return Promise.resolve().then(() => test(res)).catch(err => catchError(err, req, res));
         }));
     }
 

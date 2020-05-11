@@ -59,7 +59,7 @@ describe(TITLE, () => {
                         this.push(chunk)
                         callback();
                     }
-                })
+                });
             }));
 
             app.use(handler);

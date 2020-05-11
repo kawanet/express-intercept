@@ -23,7 +23,8 @@ describe(TITLE, () => {
                 .getResponse(res => assert.equal(+res.statusCode, 200))
                 .getResponse(res => assert.equal(+res.getHeader("content-length"), expected.length))
                 .getString(body => assert.equal(body, expected))
-                .get("/");
+                .get("/")
+                .then(res => assert.equal(res.text, expected));
         });
     }
 
@@ -37,7 +38,8 @@ describe(TITLE, () => {
                 .getResponse(res => assert.equal(+res.statusCode, 200))
                 .getResponse(res => assert.equal(+res.getHeader("content-length") | 0, 0))
                 .getString(body => assert.equal(body, empty))
-                .get("/");
+                .get("/")
+                .then(res => assert.equal(res.text || "empty", "empty"));
         });
     }
 
@@ -51,7 +53,8 @@ describe(TITLE, () => {
                 .getResponse(res => assert.equal(+res.statusCode, 200))
                 .getResponse(res => assert.equal(+res.getHeader("content-length"), expected.length))
                 .getString(body => assert.equal(body, expected))
-                .get("/");
+                .get("/")
+                .then(res => assert.equal(res.text, expected));
         });
     }
 });
