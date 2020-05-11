@@ -3,35 +3,71 @@
 import {strict as assert} from "assert";
 import * as express from "express";
 
-import {requestHandler, responseHandler} from "../lib/express-intercept";
+import {responseHandler} from "../lib/express-intercept";
 import {middlewareTest} from "./lib/middleware-test";
 import {Transform} from "stream";
+import {RequestHandler} from "express";
 
 const TITLE = __filename.split("/").pop();
 
 describe(TITLE, () => {
-    {
-        it("transformStream()", async () => {
-            const app = express();
-            const source = "Hello, world!";
-            const expected = "HELLO, WORLD!!";
+    const source = "Hello, world!";
+    const expected = "HELLO, WORLD!!";
 
-            app.use(responseHandler().transformStream((req, res) => {
+    const replacer = (body: string) => {
+        body = String(body).toUpperCase();
+        body = body.replace(/!/g, "!!");
+        return body;
+    };
+
+    test("transform stream: send()", (req, res) => {
+        res.send(source);
+    });
+
+    test("transform stream: write()", (req, res) => {
+        res.status(200).type("html");
+        res.write(source);
+        res.end();
+    });
+
+    test("transform stream: end()", (req, res) => {
+        res.status(200).type("html");
+        res.end(source);
+    });
+
+    test("transform stream: chunked", (req, res) => {
+        res.status(200).type("html");
+        source.split("").forEach(c => res.write(c));
+        res.end();
+    });
+
+    test("transform string: chunked", (req, res) => {
+        res.status(200).type("html");
+        source.split("").forEach(c => res.write(c));
+        res.end();
+    }, responseHandler().replaceString(replacer));
+
+    function test(name: string, handler: RequestHandler, transform?: RequestHandler) {
+        it(name, async () => {
+            const app = express();
+
+            app.use(transform || responseHandler().transformStream((req, res) => {
                 return new Transform({
                     transform(chunk, encoding, callback) {
                         res.removeHeader("Content-Length");
-                        let body = String(chunk).toUpperCase();
-                        body = body.replace(/!/g, "!!");
-                        chunk = Buffer.from(body);
+                        chunk = Buffer.from(replacer(String(chunk)));
                         this.push(chunk)
                         callback();
                     }
                 })
             }));
 
-            app.use(requestHandler().use((req, res) => res.send(source)));
+            app.use(handler);
 
-            await middlewareTest(app).getString(body => assert.equal(body, expected)).get("/");
+            await middlewareTest(app)
+                .getString(body => assert.equal(body, expected))
+                .get("/")
+                .expect(expected);
         });
     }
 });
