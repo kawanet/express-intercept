@@ -5,7 +5,7 @@ import * as express from "express";
 import {Request, Response} from "express";
 
 import {requestHandler, responseHandler} from "../lib/express-intercept";
-import {middlewareTest} from "./lib/middleware-test";
+import {mwsupertest} from "./lib/middleware-supertest";
 
 const TITLE = __filename.split("/").pop();
 
@@ -27,7 +27,7 @@ describe(TITLE, () => {
                 res.send(body);
             })
 
-            await middlewareTest(app)
+            await mwsupertest(app)
                 .getString(body => assert.equal(body, "A---"))
                 .getRequest(req => assert.equal(req.headers["x-req-req"], "A"))
                 .getRequest(req => assert.equal(req.headers["x-req-res"], "B"))
@@ -48,7 +48,7 @@ describe(TITLE, () => {
 
             app.use((req, res) => res.send("FOO"));
 
-            await middlewareTest(app)
+            await mwsupertest(app)
                 .getString(body => assert.equal(body, "FOO"))
                 .getResponse(res => assert.equal(res.getHeader("x-string") as string, "FOO"))
                 .getResponse(res => assert.equal(res.getHeader("x-buffer") as string, Buffer.from("FOO").toString("hex")))

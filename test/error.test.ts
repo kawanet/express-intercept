@@ -5,7 +5,7 @@ import * as express from "express";
 import {RequestHandler} from "express";
 
 import {responseHandler} from "../lib/express-intercept";
-import {middlewareTest} from "./lib/middleware-test";
+import {mwsupertest} from "./lib/middleware-supertest";
 
 const TITLE = __filename.split("/").pop();
 
@@ -15,12 +15,12 @@ describe(TITLE, () => {
 
     it("200", async () => {
         const app = express().use(success);
-        await middlewareTest(app).get("/").expect(200).expect("SUCCESS");
+        await mwsupertest(app).get("/").expect(200).expect("SUCCESS");
     });
 
     it("500", async () => {
         const app = express().use((req, res) => res.status(500).end());
-        await middlewareTest(app).get("/").expect(500);
+        await mwsupertest(app).get("/").expect(500);
     });
 
     // Express.js captures errors thrown at upstream requestHandler methods.
@@ -62,7 +62,7 @@ describe(TITLE, () => {
         it(title, async () => {
             const app = express().use(mw).use(success);
 
-            await middlewareTest(app)
+            await mwsupertest(app)
                 .getResponse(res => assert.equal(+res.statusCode, 500))
                 .getString(body => assert.equal(body || "(empty)", "(empty)"))
                 .getResponse(res => assert.equal(+res.header("content-length") | 0, 0))

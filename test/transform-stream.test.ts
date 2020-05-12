@@ -4,7 +4,7 @@ import {strict as assert} from "assert";
 import * as express from "express";
 
 import {responseHandler} from "../lib/express-intercept";
-import {middlewareTest} from "./lib/middleware-test";
+import {mwsupertest} from "./lib/middleware-supertest";
 import {Transform} from "stream";
 import {RequestHandler} from "express";
 
@@ -66,7 +66,7 @@ describe(TITLE, () => {
 
             app.use(handler);
 
-            await middlewareTest(app)
+            await mwsupertest(app)
                 .getString(body => assert.equal(body, expected))
                 .get("/")
                 .expect(200)

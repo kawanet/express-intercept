@@ -1,12 +1,11 @@
 import * as express from "express";
 import {Request, RequestHandler, Response} from "express";
 import {responseHandler} from "../../lib/express-intercept";
-import * as request from "supertest";
 import * as supertest from "supertest";
 
-export const middlewareTest = (app: RequestHandler) => new MiddlewareTest(app);
+export const mwsupertest = (app: RequestHandler) => new MiddlewareTest(app);
 
-export class MiddlewareTest {
+class MiddlewareTest {
     private _agent: supertest.SuperTest<any>;
     private handlers = express.Router();
 
@@ -15,7 +14,7 @@ export class MiddlewareTest {
     }
 
     agent() {
-        return this._agent || (this._agent = request(express().use(this.handlers).use(this.app)));
+        return this._agent || (this._agent = supertest(express().use(this.handlers).use(this.app)));
     }
 
     use(mw: RequestHandler): this {
@@ -69,7 +68,7 @@ export class MiddlewareTest {
     }
 }
 
-function wrapRequest(req: request.Request): supertest.Test {
+function wrapRequest(req: supertest.Request): supertest.Test {
     const _req = req as unknown as { assert: (resError: any, res: any, fn: any) => void };
     const _assert = _req.assert;
     _req.assert = function (resError, res, fn) {

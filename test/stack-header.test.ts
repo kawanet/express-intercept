@@ -3,7 +3,7 @@
 import * as express from "express";
 
 import {responseHandler} from "../lib/express-intercept";
-import {middlewareTest} from "./lib/middleware-test";
+import {mwsupertest} from "./lib/middleware-supertest";
 import {stackRequestHeader} from "./lib/stack-request-header";
 
 const TITLE = __filename.split("/").pop();
@@ -25,7 +25,7 @@ describe(TITLE, () => {
         app.use(addResponseHeader("x-ret4"));
         app.use((req, res) => res.send("OK"));
 
-        await middlewareTest(app)
+        await mwsupertest(app)
             .get("/")
             .set({"x-bar": "QUX"})
             .expect(200)

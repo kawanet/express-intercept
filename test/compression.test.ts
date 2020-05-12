@@ -4,7 +4,7 @@ import {strict as assert} from "assert";
 import * as express from "express";
 
 import {requestHandler} from "../lib/express-intercept";
-import {middlewareTest} from "./lib/middleware-test";
+import {mwsupertest} from "./lib/middleware-supertest";
 import {compress} from "./lib/compress";
 import {decompress} from "./lib/decompress";
 
@@ -39,13 +39,13 @@ describe(TITLE, () => {
         it("text compression", async () => {
             const app = express().use(router);
 
-            await middlewareTest(app)
+            await mwsupertest(app)
                 .getResponse(res => assert.ok(res.getHeader("content-encoding"))) // gzip or deflate
                 .get("/")
                 .expect(200)
                 .then(res => assert.equal(res.text, content));
 
-            await middlewareTest(app)
+            await mwsupertest(app)
                 .getString(body => assert.equal(body, content))
                 .get("/")
                 .expect(200)
@@ -55,13 +55,13 @@ describe(TITLE, () => {
         it("text decompression", async () => {
             const app = express().use(decompress(/^text/), router);
 
-            await middlewareTest(app)
+            await mwsupertest(app)
                 .getResponse(res => assert.equal(res.getHeader("content-encoding") || "uncompressed", "uncompressed"))
                 .get("/")
                 .expect(200)
                 .then(res => assert.equal(res.text, content));
 
-            await middlewareTest(app)
+            await mwsupertest(app)
                 .getString(body => assert.equal(body, content))
                 .get("/")
                 .expect(200)
@@ -79,7 +79,7 @@ describe(TITLE, () => {
         it("binary compression skiped", async () => {
             const app = express().use(router);
 
-            await middlewareTest(app)
+            await mwsupertest(app)
                 .getBuffer(body => assert.equal(toHEX(body), toHEX(content)))
                 .getResponse(res => assert.equal(res.getHeader("content-encoding") || "uncompressed", "uncompressed"))
                 .get("/")
@@ -90,7 +90,7 @@ describe(TITLE, () => {
         it("binary compression", async () => {
             const app = express().use(compress(/^application/), router);
 
-            await middlewareTest(app)
+            await mwsupertest(app)
                 .getResponse(res => assert.ok(res.getHeader("content-encoding"))) // gzip or deflate
                 .get("/")
                 .expect(200)
@@ -100,13 +100,13 @@ describe(TITLE, () => {
         it("binary decompression", async () => {
             const app = express().use(decompress(), router);
 
-            await middlewareTest(app)
+            await mwsupertest(app)
                 .getResponse(res => assert.equal(res.getHeader("content-encoding") || "uncompressed", "uncompressed"))
                 .get("/")
                 .expect(200)
                 .then(res => assert.equal(toHEX(res.body), toHEX(content)));
 
-            await middlewareTest(app)
+            await mwsupertest(app)
                 .getBuffer(body => assert.equal(toHEX(body), toHEX(content)))
                 .get("/")
                 .expect(200)
@@ -124,7 +124,7 @@ describe(TITLE, () => {
         it(outgoing + ": " + format + " compression", async () => {
             const app = express().use(router);
 
-            await middlewareTest(app)
+            await mwsupertest(app)
                 .getString(body => assert.equal(body, format))
                 .getResponse(res => assert.equal(res.getHeader(outgoing), format))
                 .get("/")
@@ -135,7 +135,7 @@ describe(TITLE, () => {
         it(outgoing + ": " + format + " decompression", async () => {
             const app = express().use(decompress(), router);
 
-            await middlewareTest(app)
+            await mwsupertest(app)
                 .getString(body => assert.equal(body, format))
                 .getResponse(res => assert.equal(res.getHeader(outgoing) || "uncompressed", "uncompressed"))
                 .get("/")

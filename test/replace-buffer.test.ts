@@ -4,7 +4,7 @@ import {strict as assert} from "assert";
 import * as express from "express";
 
 import {responseHandler} from "../lib/express-intercept";
-import {middlewareTest} from "./lib/middleware-test";
+import {mwsupertest} from "./lib/middleware-supertest";
 
 const TITLE = __filename.split("/").pop();
 
@@ -19,7 +19,7 @@ describe(TITLE, () => {
             app.use(responseHandler().replaceBuffer(() => expected));
             app.use((req, res) => res.type("application/octet-stream").end(source))
 
-            await middlewareTest(app)
+            await mwsupertest(app)
                 .getResponse(res => assert.equal(+res.statusCode, 200))
                 .getResponse(res => assert.equal(+res.getHeader("content-length"), expected.length))
                 .getBuffer(body => assert.equal(toHEX(body), toHEX(expected)))
@@ -35,7 +35,7 @@ describe(TITLE, () => {
             app.use(responseHandler().replaceBuffer(async () => expected));
             app.use((req, res) => res.type("application/octet-stream").end(source))
 
-            await middlewareTest(app)
+            await mwsupertest(app)
                 .getResponse(res => assert.equal(+res.statusCode, 200))
                 .getResponse(res => assert.equal(+res.getHeader("content-length"), expected.length))
                 .getBuffer(body => assert.equal(toHEX(body), toHEX(expected)))
@@ -51,7 +51,7 @@ describe(TITLE, () => {
             app.use(responseHandler().replaceBuffer(async() => empty));
             app.use((req, res) => res.type("application/octet-stream").send(source))
 
-            await middlewareTest(app)
+            await mwsupertest(app)
                 .getResponse(res => assert.equal(+res.statusCode, 200))
                 .getResponse(res => assert.equal(+res.getHeader("content-length") | 0, 0))
                 .getBuffer(body => assert.equal(toHEX(body), toHEX(empty)))
@@ -67,7 +67,7 @@ describe(TITLE, () => {
             app.use(responseHandler().replaceBuffer(async() => expected));
             app.use((req, res) => res.type("application/octet-stream").send(empty))
 
-            await middlewareTest(app)
+            await mwsupertest(app)
                 .getResponse(res => assert.equal(+res.statusCode, 200))
                 .getResponse(res => assert.equal(+res.getHeader("content-length"), expected.length))
                 .getBuffer(body => assert.equal(toHEX(body), toHEX(expected)))

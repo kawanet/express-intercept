@@ -4,7 +4,7 @@ import {strict as assert} from "assert";
 import * as express from "express";
 
 import {requestHandler, responseHandler} from "../lib/express-intercept";
-import {middlewareTest} from "./lib/middleware-test";
+import {mwsupertest} from "./lib/middleware-supertest";
 
 const TITLE = __filename.split("/").pop();
 
@@ -44,12 +44,12 @@ describe(TITLE, () => {
                 res.send("/");
             }));
 
-            await middlewareTest(app).getString(body => assert.equal(body, "/A/")).get("/A/").expect(200).expect("/A/");
-            await middlewareTest(app).getString(body => assert.equal(body, "/BC/")).get("/BC/").expect(200).expect("/BC/");
-            await middlewareTest(app).getString(body => assert.equal(body, "/D/")).get("/D/").expect(200).expect("/D/");
-            await middlewareTest(app).getString(body => assert.equal(body, "/EF/")).get("/EF/").expect(200).expect("/EF/");
-            await middlewareTest(app).getString(body => assert.equal(body, "/GH/")).get("/GH/").expect(200).expect("/GH/");
-            await middlewareTest(app).getString(body => assert.equal(body, "//")).get("/X/").expect(200).expect("//");
+            await mwsupertest(app).getString(body => assert.equal(body, "/A/")).get("/A/").expect(200).expect("/A/");
+            await mwsupertest(app).getString(body => assert.equal(body, "/BC/")).get("/BC/").expect(200).expect("/BC/");
+            await mwsupertest(app).getString(body => assert.equal(body, "/D/")).get("/D/").expect(200).expect("/D/");
+            await mwsupertest(app).getString(body => assert.equal(body, "/EF/")).get("/EF/").expect(200).expect("/EF/");
+            await mwsupertest(app).getString(body => assert.equal(body, "/GH/")).get("/GH/").expect(200).expect("/GH/");
+            await mwsupertest(app).getString(body => assert.equal(body, "//")).get("/X/").expect(200).expect("//");
         });
     }
 });
