@@ -1,7 +1,7 @@
 // express-intercept.ts
 
 import {Request, RequestHandler, Response} from "express";
-import {PassThrough, Readable, Writable} from "stream";
+import {Readable, Writable} from "stream";
 import * as zlib from "zlib";
 
 type CallbackFn = (err?: Error) => void;
@@ -65,7 +65,7 @@ class ResponseHandlerBuilder extends RequestHandlerBuilder {
     }
 
     replaceString(replacer: (body: string, req?: Request, res?: Response) => (string | Promise<string>)): RequestHandler {
-        return super.use(buildResponseHandler(this._if, async (payload, req, res) => {
+        return super.use(buildResponseHandler<ResponsePayload>(this._if, async (payload, req, res) => {
             let body = payload.getString();
             body = await replacer(body, req, res);
             payload.setString(body);
@@ -73,7 +73,7 @@ class ResponseHandlerBuilder extends RequestHandlerBuilder {
     }
 
     replaceBuffer(replacer: (body: Buffer, req?: Request, res?: Response) => (Buffer | Promise<Buffer>)): RequestHandler {
-        return super.use(buildResponseHandler(this._if, async (payload, req, res) => {
+        return super.use(buildResponseHandler<ResponsePayload>(this._if, async (payload, req, res) => {
             let body = payload.getBuffer();
             body = await replacer(body, req, res);
             payload.setBuffer(body);
@@ -81,58 +81,56 @@ class ResponseHandlerBuilder extends RequestHandlerBuilder {
     }
 
     interceptStream(interceptor: (upstream: Readable, req: Request, res: Response) => (Readable | Promise<Readable>)): RequestHandler {
-        return super.use(buildResponseHandler(this._if, async (payload, req, res) => {
-            const through = new PassThrough();
-            const readable = await interceptor(through, req, res);
-            if (!readable) return;
-            readable.pipe(res);
-            return through;
-        }));
+        return super.use(buildResponseHandler<Readable>(this._if, async (payload, req, res) => {
+            return interceptor(payload, req, res);
+        }, () => new ReadablePayload()));
     }
 
     getString(receiver: (body: string, req?: Request, res?: Response) => (any | Promise<any>)): RequestHandler {
-        return super.use(buildResponseHandler(this._if, async (payload, req, res) => {
+        return super.use(buildResponseHandler<ResponsePayload>(this._if, async (payload, req, res) => {
             const body = payload.getString();
             await receiver(body, req, res);
         }));
     }
 
     getBuffer(receiver: (body: Buffer, req?: Request, res?: Response) => (any | Promise<any>)): RequestHandler {
-        return super.use(buildResponseHandler(this._if, async (payload, req, res) => {
+        return super.use(buildResponseHandler<ResponsePayload>(this._if, async (payload, req, res) => {
             const body = payload.getBuffer();
             await receiver(body, req, res);
         }));
     }
 
     getRequest(receiver: (req: Request) => (any | Promise<any>)): RequestHandler {
-        return super.use(buildResponseHandler(this._if, async (payload, req, res) => {
+        return super.use(buildResponseHandler<ResponsePayload>(this._if, async (payload, req, res) => {
             await receiver(req);
         }));
     }
 
     getResponse(receiver: (res: Response) => (any | Promise<any>)): RequestHandler {
-        return super.use(buildResponseHandler(this._if, async (payload, req, res) => {
+        return super.use(buildResponseHandler<ResponsePayload>(this._if, async (payload, req, res) => {
             await receiver(res);
         }));
     }
 }
 
-function buildRequestHandler(_for: ((req: Request) => boolean), handler: RequestHandler): RequestHandler {
-    // without _for condition
-    if (!_for) return handler;
+function buildRequestHandler(requestFor: ((req: Request) => boolean), handler: RequestHandler): RequestHandler {
+    // without .for() condition
+    if (!requestFor) return handler;
 
-    // with _for condition
-    return (req, res, next) => {
-        return _for(req) ? handler(req, res, next) : next();
-    };
+    // with .for() condition
+    return (req, res, next) => requestFor(req) ? handler(req, res, next) : next();
 }
 
-function buildResponseHandler(_if: (res: Response) => boolean, interceptor?: (payload: ResponsePayload, req: Request, res: Response) => (Promise<Writable | void>)): RequestHandler {
+function buildResponseHandler<T extends IReadable>(
+    responseIf: (res: Response) => boolean,
+    interceptor?: (payload: T, req: Request, res: Response) => (Promise<T | void>),
+    container?: () => T
+): RequestHandler {
     return (req, res, next) => {
         let started: boolean;
         let stopped: boolean;
-        let error: boolean;
-        const payload = new ResponsePayload(res);
+        let payload: IReadable;
+        let error: Error;
 
         const original_write = res.write;
         const intercept_write = res.write = function (chunk: any, encoding?: any, cb?: CallbackFn) {
@@ -157,6 +155,7 @@ function buildResponseHandler(_if: (res: Response) => boolean, interceptor?: (pa
             if ("function" === typeof item[item.length - 1]) cb = item.pop();
             if (item[0]) payload.push(item[0], item[1]);
             if (!cb) cb = (e?: Error) => null;
+            payload.push(null);
             finish().then(() => cb(), cb);
             return this;
         };
@@ -167,10 +166,12 @@ function buildResponseHandler(_if: (res: Response) => boolean, interceptor?: (pa
             started = true;
 
             try {
-                if (_if && !_if(res)) return stop();
+                if (responseIf && !responseIf(res)) return stop(); // .if()
             } catch (e) {
-                error = true;
+                error = e;
             }
+
+            payload = container ? container() : new ResponsePayload(res) as IReadable;
         }
 
         function stop() {
@@ -182,27 +183,29 @@ function buildResponseHandler(_if: (res: Response) => boolean, interceptor?: (pa
         }
 
         async function finish() {
-            let dest: Writable;
+            let readable: IReadable;
 
             try {
-                if (!error && interceptor) dest = await interceptor(payload, req, res) || null;
+                if (!error && interceptor) {
+                    readable = await interceptor(payload as T, req, res) || payload;
+                }
             } catch (e) {
-                error = true;
+                error = e;
             }
 
+            // change response status code if failed before sending body
             if (error) {
                 res.status(500);
-                payload.setBuffer(Buffer.of()); // empty
                 res.end();
                 return Promise.reject(error);
-            } else {
-                payload.pipe(dest || res);
             }
+
+            readable.pipe(res);
         }
     };
 }
 
-function send(queue: ChunkItem[], dest: Writable, cb: CallbackFn) {
+function send(queue: ChunkItem[], dest: Writable, cb?: CallbackFn) {
     let error: Error;
 
     try {
@@ -232,19 +235,20 @@ function send(queue: ChunkItem[], dest: Writable, cb: CallbackFn) {
     }
 }
 
-class ResponsePayload implements IReadable {
-    private res: Response;
-    queue: ChunkItem[];
-    push: (chunk: any, encoding?: string) => void;
+class ResponsePayload {
+    queue: ChunkItem[] = [];
 
-    constructor(res: Response) {
-        this.res = res;
-        const queue = this.queue = [] as ChunkItem[];
-        this.push = (chunk: (string | Buffer), encoding: string) => queue.push([chunk, encoding]);
+    constructor(private res: Response) {
+        //
+    }
+
+    push(chunk: any, encoding?: string): void {
+        if (chunk == null) return; // EOF
+        this.queue.push([chunk, encoding]);
     }
 
     pipe(destination: Writable): Writable {
-        send(this.queue, destination, null);
+        send(this.queue, destination);
         return destination;
     }
 
@@ -321,6 +325,12 @@ class ResponsePayload implements IReadable {
         if (!text) text = "";
         const buffer = Buffer.from(text);
         this.setBuffer(buffer);
+    }
+}
+
+class ReadablePayload extends Readable {
+    _read() {
+        // don't care
     }
 }
 
