@@ -8,6 +8,11 @@ type CallbackFn = (err?: Error) => void;
 type ChunkItem = [string | Buffer, any?, any?];
 type CondFn<T> = (arg: T) => boolean;
 
+interface IReadable {
+    push: (chunk: any, encoding?: string) => void;
+    pipe: (destination: Writable) => Writable;
+}
+
 const decoders = {
     br: zlib.brotliDecompressSync,
     gzip: zlib.gunzipSync,
@@ -124,10 +129,10 @@ function buildRequestHandler(_for: ((req: Request) => boolean), handler: Request
 
 function buildResponseHandler(_if: (res: Response) => boolean, interceptor?: (payload: ResponsePayload, req: Request, res: Response) => (Promise<Writable | void>)): RequestHandler {
     return (req, res, next) => {
-        const queue = [] as ChunkItem[];
         let started: boolean;
         let stopped: boolean;
         let error: boolean;
+        const payload = new ResponsePayload(res);
 
         const original_write = res.write;
         const intercept_write = res.write = function (chunk: any, encoding?: any, cb?: CallbackFn) {
@@ -136,7 +141,7 @@ function buildResponseHandler(_if: (res: Response) => boolean, interceptor?: (pa
 
             const item = [].slice.call(arguments);
             if ("function" === typeof item[item.length - 1]) cb = item.pop();
-            if (item[0]) queue.push(item);
+            if (item[0]) payload.push(item[0], item[1]);
             if (cb) cb(); // received
             return true;
         };
@@ -150,8 +155,9 @@ function buildResponseHandler(_if: (res: Response) => boolean, interceptor?: (pa
 
             const item = [].slice.call(arguments);
             if ("function" === typeof item[item.length - 1]) cb = item.pop();
-            if (item[0]) queue.push(item);
-            finish(cb);
+            if (item[0]) payload.push(item[0], item[1]);
+            if (!cb) cb = (e?: Error) => null;
+            finish().then(() => cb(), cb);
             return this;
         };
 
@@ -175,8 +181,7 @@ function buildResponseHandler(_if: (res: Response) => boolean, interceptor?: (pa
             if (res.end === intercept_end) res.end = original_end;
         }
 
-        async function finish(cb: CallbackFn) {
-            const payload = new ResponsePayload(res, queue);
+        async function finish() {
             let dest: Writable;
 
             try {
@@ -189,8 +194,9 @@ function buildResponseHandler(_if: (res: Response) => boolean, interceptor?: (pa
                 res.status(500);
                 payload.setBuffer(Buffer.of()); // empty
                 res.end();
+                return Promise.reject(error);
             } else {
-                send(payload.queue, (dest || res), cb);
+                payload.pipe(dest || res);
             }
         }
     };
@@ -226,13 +232,20 @@ function send(queue: ChunkItem[], dest: Writable, cb: CallbackFn) {
     }
 }
 
-class ResponsePayload {
+class ResponsePayload implements IReadable {
     private res: Response;
     queue: ChunkItem[];
+    push: (chunk: any, encoding?: string) => void;
 
-    constructor(res: Response, queue?: ChunkItem[]) {
+    constructor(res: Response) {
         this.res = res;
-        this.queue = queue || [];
+        const queue = this.queue = [] as ChunkItem[];
+        this.push = (chunk: (string | Buffer), encoding: string) => queue.push([chunk, encoding]);
+    }
+
+    pipe(destination: Writable): Writable {
+        send(this.queue, destination, null);
+        return destination;
     }
 
     getBuffer(): Buffer {
