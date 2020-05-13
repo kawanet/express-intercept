@@ -70,10 +70,10 @@ export class ResponsePayload {
         const {queue, res} = this;
 
         // force Buffer
-        const buffers = queue.map(item => item[0]).map(chunk => Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+        const buffers = queue.map(item => Buffer.isBuffer(item[0]) ? item[0] : Buffer.from(item[0], item[1]));
 
         // concat Buffer
-        let buffer = Buffer.concat(buffers);
+        let buffer = (buffers.length === 1) ? buffers[0] : Buffer.concat(buffers);
 
         // uncompress Buffer
         const contentEncoding = res.getHeader("Content-Encoding") as string;
