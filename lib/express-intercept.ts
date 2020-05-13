@@ -70,7 +70,7 @@ class ResponseHandlerBuilder extends RequestHandlerBuilder {
 
     /**
      * It returns a RequestHandler to replace the response content body as a string.
-     * It manages the response stream even when chunked or compressed.
+     * It gives a single string even when the response stream is chunked and/or compressed.
      */
 
     replaceString(replacer: (body: string, req?: Request, res?: Response) => (string | Promise<string>)): RequestHandler {
@@ -83,7 +83,7 @@ class ResponseHandlerBuilder extends RequestHandlerBuilder {
 
     /**
      * It returns a RequestHandler to replace the response content body as a Buffer.
-     * It manages the response stream even when chunked or compressed.
+     * It gives a single Buffer even when the response stream is chunked and/or compressed.
      */
 
     replaceBuffer(replacer: (body: Buffer, req?: Request, res?: Response) => (Buffer | Promise<Buffer>)): RequestHandler {
@@ -96,7 +96,7 @@ class ResponseHandlerBuilder extends RequestHandlerBuilder {
 
     /**
      * It returns a RequestHandler to replace the response content body as a stream.Readable.
-     * It passes raw response as a stream.Readable whether compressed or not.
+     * Interceptor may need to decompress the response stream when compressed.
      * Interceptor should return yet another stream.Readable to perform transform the stream.
      * Interceptor would use stream.Transform for most cases as it is a Readable.
      * Interceptor could return null or the upstream itself as given if transformation not happened.
@@ -110,7 +110,7 @@ class ResponseHandlerBuilder extends RequestHandlerBuilder {
 
     /**
      * It returns a RequestHandler to retrieve the response content body as a string.
-     * It manages the response stream even when chunked or compressed.
+     * It gives a single string even when the response stream is chunked and/or compressed.
      */
 
     getString(receiver: (body: string, req?: Request, res?: Response) => (any | Promise<any>)): RequestHandler {
@@ -122,7 +122,7 @@ class ResponseHandlerBuilder extends RequestHandlerBuilder {
 
     /**
      * It returns a RequestHandler to retrieve the response content body as a Buffer.
-     * It manages the response stream even when chunked or compressed.
+     * It gives a single Buffer even when the response stream is chunked and/or compressed.
      */
 
     getBuffer(receiver: (body: Buffer, req?: Request, res?: Response) => (any | Promise<any>)): RequestHandler {
