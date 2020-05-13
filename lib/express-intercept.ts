@@ -11,7 +11,7 @@ export const requestHandler = () => new RequestHandlerBuilder();
 
 export const responseHandler = () => new ResponseHandlerBuilder();
 
-class RequestHandlerBuilder {
+export class RequestHandlerBuilder {
     private _for: ((req: Request) => boolean);
 
     /**
@@ -53,7 +53,7 @@ class RequestHandlerBuilder {
     }
 }
 
-class ResponseHandlerBuilder extends RequestHandlerBuilder {
+export class ResponseHandlerBuilder extends RequestHandlerBuilder {
     private _if: ((res: Response) => boolean);
     use: never;
 

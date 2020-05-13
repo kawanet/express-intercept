@@ -3,7 +3,7 @@ import { Request, RequestHandler, Response } from "express";
 import { Readable } from "stream";
 export declare const requestHandler: () => RequestHandlerBuilder;
 export declare const responseHandler: () => ResponseHandlerBuilder;
-declare class RequestHandlerBuilder {
+export declare class RequestHandlerBuilder {
     private _for;
     /**
      * It appends a test condition to perform the RequestHandler.
@@ -22,7 +22,7 @@ declare class RequestHandlerBuilder {
      */
     getRequest(receiver: (req: Request) => (any | Promise<any>)): RequestHandler;
 }
-declare class ResponseHandlerBuilder extends RequestHandlerBuilder {
+export declare class ResponseHandlerBuilder extends RequestHandlerBuilder {
     private _if;
     use: never;
     /**
@@ -69,4 +69,3 @@ declare class ResponseHandlerBuilder extends RequestHandlerBuilder {
      */
     getResponse(receiver: (res: Response) => (any | Promise<any>)): RequestHandler;
 }
-export {};
