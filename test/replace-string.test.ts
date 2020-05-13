@@ -76,4 +76,20 @@ describe(TITLE, () => {
                 .then(res => assert.equal(res.text, expected));
         });
     }
+
+    {
+        it("replaceString without change", async () => {
+            const app = express();
+            app.use(responseHandler().replaceString(str => str));
+            app.use((req, res) => res.send(expected))
+
+            await mwsupertest(app)
+                .getResponse(res => assert.equal(+res.statusCode, 200))
+                .getResponse(res => assert.equal(+res.getHeader("content-length"), expected.length))
+                .getString(body => assert.equal(body, expected))
+                .get("/")
+                .expect(200)
+                .then(res => assert.equal(res.text, expected));
+        });
+    }
 });

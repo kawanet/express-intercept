@@ -75,9 +75,10 @@ export class ResponseHandlerBuilder extends RequestHandlerBuilder {
 
     replaceString(replacer: (body: string, req?: Request, res?: Response) => (string | Promise<string>)): RequestHandler {
         return super.use(buildResponseHandler<ResponsePayload>(this._if, async (payload, req, res) => {
-            let body = payload.getString();
-            body = await replacer(body, req, res);
-            payload.setString(body);
+            const body = payload.getString();
+            const replaced = await replacer(body, req, res);
+            if (body === replaced) return; // nothing changed
+            payload.setString(replaced);
         }));
     }
 
