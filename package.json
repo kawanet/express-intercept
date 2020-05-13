@@ -19,7 +19,7 @@
   "files": [
     "LICENSE",
     "README.md",
-    "types/",
+    "types/express-intercept.d.ts",
     "lib/"
   ],
   "homepage": "https://github.com/kawanet/express-intercept#readme",
@@ -39,10 +39,11 @@
     "url": "git+https://github.com/kawanet/express-intercept.git"
   },
   "scripts": {
-    "build": "tsc -p . && tsc -p types",
+    "build": "./node_modules/.bin/tsc -p .",
+    "build-types": "./node_modules/.bin/tsc -p types",
     "fixpack": "fixpack",
     "mocha": "./node_modules/.bin/mocha -R spec test/*.js",
-    "test": "npm run build && npm run mocha",
+    "test": "npm run build && npm run build-types && npm run mocha",
     "tsc-watch": "tsc --watch"
   },
   "typings": "./types/express-intercept.d.ts"
