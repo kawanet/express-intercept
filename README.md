@@ -2,6 +2,8 @@
 
 Build Express middleware to intercept / replace / inspect / transform response
 
+  [![NPM Version][npm-image]][npm-url]
+
 ## SYNOPSIS
 
 ```js
