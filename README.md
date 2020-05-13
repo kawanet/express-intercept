@@ -2,7 +2,7 @@
 
 Build Express middleware to intercept / replace / inspect / transform response
 
-  [![NPM Version][npm-image]][npm-url]
+[![npm version](https://badge.fury.io/js/express-intercept.svg)](https://www.npmjs.com/package/express-intercept)
 
 ## SYNOPSIS
 
@@ -38,6 +38,10 @@ app.use(responseHandler().interceptStream(upstream => upstream.pipe(zlib.createB
 
 ## METHODS
 
+See TypeScript definition
+[express-intercept.d.ts](https://github.com/kawanet/express-intercept/blob/master/types/express-intercept.d.ts)
+for detail.
+
 #### `for(condition: (req: Request) => boolean)`
 
 It appends a test condition to perform the RequestHandler.
@@ -50,12 +54,12 @@ It appends a test condition to perform the RequestHandler.
 Call this for multiple times to add multiple tests in AND condition.
 Those tests could avoid unnecessary response interception work including additional buffering.
 
-#### `replaceString(replacer: (body: string, req: Request, res: Response) => string))`
+#### `replaceString(replacer: (body: string, req: Request, res: Response) => string)`
 
 It returns a RequestHandler to replace the response content body as a string.
 It manages the response stream even when chunked or compressed.
 
-#### `replaceBuffer(replacer: (body: Buffer, req: Request, res: Response) => Buffer>)`
+#### `replaceBuffer(replacer: (body: Buffer, req: Request, res: Response) => Buffer)`
 
 It returns a RequestHandler to replace the response content body as a Buffer.
 It manages the response stream even when chunked or compressed.
