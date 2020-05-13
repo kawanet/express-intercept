@@ -3,9 +3,9 @@ import {Request, RequestHandler, Response} from "express";
 import {responseHandler} from "../../lib/express-intercept";
 import * as supertest from "supertest";
 
-export const mwsupertest = (app: RequestHandler) => new MiddlewareTest(app);
+export const mwsupertest = (app: RequestHandler) => new MWSuperTest(app);
 
-class MiddlewareTest {
+export class MWSuperTest {
     private _agent: supertest.SuperTest<any>;
     private handlers = express.Router();
 
