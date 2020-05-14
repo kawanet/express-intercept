@@ -3,7 +3,7 @@
 import {Request, RequestHandler, Response} from "express";
 import {Readable} from "stream";
 import {ResponsePayload} from "./_payload";
-import {buildRequestHandler, buildResponseHandler} from "./_builder";
+import {buildRequestHandler, buildResponseHandler} from "./_handler";
 import {findEncoding} from "./_compression";
 
 type CondFn<T> = (arg: T) => boolean;

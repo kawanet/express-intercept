@@ -1,4 +1,4 @@
-// _builder.ts
+// _handler.ts
 
 import {Request, RequestHandler, Response} from "express";
 import {ResponsePayload} from "./_payload";
