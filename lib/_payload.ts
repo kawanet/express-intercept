@@ -10,19 +10,28 @@ type ChunkItem = [string | Buffer, any?, any?];
 function send(queue: ChunkItem[], dest: Writable, cb?: CallbackFn) {
     let error: Error;
 
-    try {
-        queue.forEach(item => {
-            if (!error) dest.write(item[0], item[1], catchError);
-        });
-    } catch (e) {
-        catchError(e);
-    }
+    if (queue.length === 1) {
+        const item = queue[0];
+        try {
+            dest.end(item[0], item[1], sendResult);
+        } catch (e) {
+            catchError(e);
+        }
+    } else {
+        try {
+            queue.forEach(item => {
+                if (!error) dest.write(item[0], item[1], catchError);
+            });
+        } catch (e) {
+            catchError(e);
+        }
 
-    // close stream even on error
-    try {
-        dest.end(sendResult);
-    } catch (e) {
-        catchError(e);
+        // close stream even after error
+        try {
+            dest.end(sendResult);
+        } catch (e) {
+            catchError(e);
+        }
     }
 
     if (cb) cb(); // success callback
@@ -31,7 +40,7 @@ function send(queue: ChunkItem[], dest: Writable, cb?: CallbackFn) {
         error = error || e;
     }
 
-    function sendResult(e: Error) {
+    function sendResult(e?: Error) {
         if (cb) cb(e || error);
         cb = null; // callback only once
     }
