@@ -4,6 +4,7 @@ import {Request, RequestHandler, Response} from "express";
 import {Readable} from "stream";
 import {ResponsePayload} from "./_payload";
 import {buildRequestHandler, buildResponseHandler} from "./_builder";
+import {findEncoding} from "./_compression";
 
 type CondFn<T> = (arg: T) => boolean;
 
@@ -152,6 +153,21 @@ export class ResponseHandlerBuilder extends RequestHandlerBuilder {
         return super.use(buildResponseHandler<ResponsePayload>(this._if, async (payload, req, res) => {
             await receiver(res);
         }));
+    }
+
+    compressResponse(): RequestHandler {
+        return this.replaceBuffer((buf, req, res) => {
+            const encoding = findEncoding(req.header("Accept-Encoding"));
+            res.setHeader("Content-Encoding", encoding); // signal to compress with the encoding
+            return buf;
+        });
+    }
+
+    decompressResponse(): RequestHandler {
+        return this.replaceBuffer((buf, req, res) => {
+            res.removeHeader("Content-Encoding"); // signal not to compress again
+            return buf;
+        });
     }
 }
 

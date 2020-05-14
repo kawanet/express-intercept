@@ -2,22 +2,10 @@
 
 import {Writable} from "stream";
 import {Response} from "express";
-import * as zlib from "zlib";
+import {compressBuffer, decompressBuffer, findEncoding} from "./_compression";
 
 type CallbackFn = (err?: Error) => void;
 type ChunkItem = [string | Buffer, any?, any?];
-
-const decoders = {
-    br: zlib.brotliDecompressSync,
-    gzip: zlib.gunzipSync,
-    deflate: zlib.inflateSync,
-} as { [encoding: string]: (buf: Buffer) => Buffer };
-
-const encoders = {
-    br: zlib.brotliCompressSync,
-    gzip: zlib.gzipSync,
-    deflate: zlib.deflateSync,
-} as { [encoding: string]: (buf: Buffer) => Buffer };
 
 function send(queue: ChunkItem[], dest: Writable, cb?: CallbackFn) {
     let error: Error;
@@ -75,13 +63,10 @@ export class ResponsePayload {
         // concat Buffer
         let buffer = (buffers.length === 1) ? buffers[0] : Buffer.concat(buffers);
 
-        // uncompress Buffer
-        const contentEncoding = res.getHeader("Content-Encoding") as string;
-        const transferEncoding = res.getHeader("Transfer-Encoding") as string;
-        const decoder = decoders[contentEncoding] || decoders[transferEncoding];
-
-        if (decoder && buffer.length) {
-            buffer = decoder(buffer);
+        // decompress Buffer
+        const encoding = findEncoding(res.getHeader("Content-Encoding"));
+        if (encoding && buffer.length) {
+            buffer = decompressBuffer(buffer, encoding);
         }
 
         return buffer;
@@ -99,13 +84,10 @@ export class ResponsePayload {
             res.removeHeader("ETag");
         }
 
-        // compress Buffer as before
-        const contentEncoding = res.getHeader("Content-Encoding") as string;
-        const transferEncoding = res.getHeader("Transfer-Encoding") as string;
-        const encoder = encoders[contentEncoding] || encoders[transferEncoding];
-
-        if (encoder && buffer.length) {
-            buffer = encoder(buffer);
+        // recompress Buffer as compressed before
+        const encoding = findEncoding(res.getHeader("Content-Encoding"));
+        if (encoding && buffer.length) {
+            buffer = compressBuffer(buffer, encoding);
         }
 
         const length = +buffer.length;
