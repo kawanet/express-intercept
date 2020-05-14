@@ -1,8 +1,8 @@
 /// <reference types="node" />
 import { ErrorRequestHandler, Request, RequestHandler, Response } from "express";
 import { Readable } from "stream";
-export declare const requestHandler: (errorHandler?: ErrorRequestHandler<any, any, any, import("express-serve-static-core").Query>) => RequestHandlerBuilder;
-export declare const responseHandler: (errorHandler?: ErrorRequestHandler<import("express-serve-static-core").ParamsDictionary, any, any, import("express-serve-static-core").Query>) => ResponseHandlerBuilder;
+export declare function requestHandler(errorHandler?: ErrorRequestHandler): RequestHandlerBuilder;
+export declare function responseHandler(errorHandler?: ErrorRequestHandler): ResponseHandlerBuilder;
 declare class RequestHandlerBuilder {
     constructor(errorHandler?: ErrorRequestHandler);
     _error: ErrorRequestHandler;

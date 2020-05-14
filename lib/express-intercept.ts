@@ -1,6 +1,6 @@
 // express-intercept.ts
 
-import {Request, RequestHandler, Response} from "express";
+import {ErrorRequestHandler, Request, RequestHandler, Response} from "express";
 import {Readable} from "stream";
 import {ResponsePayload} from "./_payload";
 import {buildResponseHandler} from "./_handler";
@@ -8,27 +8,27 @@ import {findEncoding} from "./_compression";
 
 type CondFn<T> = (arg: T) => boolean;
 
-type NextFunction = (err?: any) => void;
-type ErrorHandler = (err: Error, req: Request, res: Response, next: NextFunction) => void;
-// type RequestHandler = (req: Request, res: Response, next: NextFunction) => void;
-
-export const requestHandler = (errorHandler?: ErrorHandler) => new RequestHandlerBuilder(errorHandler);
-
-export const responseHandler = (errorHandler?: ErrorHandler) => new ResponseHandlerBuilder(errorHandler);
-
 const NOP: RequestHandler = (req, res, next) => next();
 
-const defaultErrorHandler: ErrorHandler = (err, req, res, next) => {
+export function requestHandler(errorHandler?: ErrorRequestHandler) {
+    return new RequestHandlerBuilder(errorHandler || defaultErrorHandler);
+}
+
+export function responseHandler(errorHandler?: ErrorRequestHandler) {
+    return new ResponseHandlerBuilder(errorHandler || defaultErrorHandler);
+}
+
+const defaultErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
     console.error(err);
     res.status(500).set({"Content-Length": "0"}).end();
 };
 
 class RequestHandlerBuilder {
-    constructor(errorHandler?: ErrorHandler) {
-        this._error = errorHandler || defaultErrorHandler;
+    constructor(errorHandler?: ErrorRequestHandler) {
+        this._error = errorHandler;
     }
 
-    _error: ErrorHandler;
+    _error: ErrorRequestHandler;
 
     /**
      * It appends a test condition to perform the RequestHandler.
@@ -213,7 +213,7 @@ function JOIN(A: RequestHandler, B: RequestHandler): RequestHandler {
     return (req, res, next) => A(req, res, err => (err ? next(err) : B(req, res, next)));
 }
 
-function asyncHandler(handler: RequestHandler, errorHandler?: ErrorHandler): RequestHandler {
+function asyncHandler(handler: RequestHandler, errorHandler?: ErrorRequestHandler): RequestHandler {
     return async (req, res, next) => {
         try {
             return await handler(req, res, cb);
