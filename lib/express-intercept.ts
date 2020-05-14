@@ -3,17 +3,32 @@
 import {Request, RequestHandler, Response} from "express";
 import {Readable} from "stream";
 import {ResponsePayload} from "./_payload";
-import {buildRequestHandler, buildResponseHandler} from "./_handler";
+import {buildResponseHandler} from "./_handler";
 import {findEncoding} from "./_compression";
 
 type CondFn<T> = (arg: T) => boolean;
 
-export const requestHandler = () => new RequestHandlerBuilder();
+type NextFunction = (err?: any) => void;
+type ErrorHandler = (err: Error, req: Request, res: Response, next: NextFunction) => void;
+// type RequestHandler = (req: Request, res: Response, next: NextFunction) => void;
 
-export const responseHandler = () => new ResponseHandlerBuilder();
+export const requestHandler = (errorHandler?: ErrorHandler) => new RequestHandlerBuilder(errorHandler);
 
-export class RequestHandlerBuilder {
-    private _for: ((req: Request) => boolean);
+export const responseHandler = (errorHandler?: ErrorHandler) => new ResponseHandlerBuilder(errorHandler);
+
+const NOP: RequestHandler = (req, res, next) => next();
+
+const defaultErrorHandler: ErrorHandler = (err, req, res, next) => {
+    console.error(err);
+    res.status(500).set({"Content-Length": "0"}).end();
+};
+
+class RequestHandlerBuilder {
+    constructor(errorHandler?: ErrorHandler) {
+        this._error = errorHandler || defaultErrorHandler;
+    }
+
+    _error: ErrorHandler;
 
     /**
      * It appends a test condition to perform the RequestHandler.
@@ -26,6 +41,8 @@ export class RequestHandlerBuilder {
         return this;
     }
 
+    _for: ((req: Request) => boolean);
+
     /**
      * It returns a RequestHandler which connects multiple RequestHandlers.
      * Use this after `requestHandler()` method but not after `responseHandlder()`.
@@ -33,13 +50,14 @@ export class RequestHandlerBuilder {
 
     use(handler: RequestHandler, ...more: RequestHandler[]): RequestHandler {
         for (const mw of more) {
-            handler = (handler && mw) ? JOIN(handler, mw) : (handler || mw);
+            if (mw) handler = handler ? JOIN(handler, mw) : mw;
         }
 
-        // NOP
-        if (!handler) handler = (req, res, next) => next();
+        if (!handler) handler = NOP;
 
-        return buildRequestHandler(this._for, handler);
+        if (this._for) handler = IF(this._for, handler);
+
+        return asyncHandler(handler, this._error);
     }
 
     /**
@@ -48,14 +66,14 @@ export class RequestHandlerBuilder {
      */
 
     getRequest(receiver: (req: Request) => (any | Promise<any>)): RequestHandler {
-        return (req, res, next) => {
-            return Promise.resolve().then(() => receiver(req)).then(() => next(), next);
-        }
+        return this.use(async (req, res, next) => {
+            await receiver(req);
+            next();
+        });
     }
 }
 
-export class ResponseHandlerBuilder extends RequestHandlerBuilder {
-    private _if: ((res: Response) => boolean);
+class ResponseHandlerBuilder extends RequestHandlerBuilder {
     use: never;
 
     /**
@@ -69,13 +87,15 @@ export class ResponseHandlerBuilder extends RequestHandlerBuilder {
         return this;
     }
 
+    _if: ((res: Response) => boolean);
+
     /**
      * It returns a RequestHandler to replace the response content body as a string.
      * It gives a single string even when the response stream is chunked and/or compressed.
      */
 
     replaceString(replacer: (body: string, req?: Request, res?: Response) => (string | Promise<string>)): RequestHandler {
-        return super.use(buildResponseHandler<ResponsePayload>(this._if, async (payload, req, res) => {
+        return super.use(buildResponseHandler<ResponsePayload>(this, async (payload, req, res) => {
             const body = payload.getString();
             const replaced = await replacer(body, req, res);
             if (body === replaced) return; // nothing changed
@@ -89,7 +109,7 @@ export class ResponseHandlerBuilder extends RequestHandlerBuilder {
      */
 
     replaceBuffer(replacer: (body: Buffer, req?: Request, res?: Response) => (Buffer | Promise<Buffer>)): RequestHandler {
-        return super.use(buildResponseHandler<ResponsePayload>(this._if, async (payload, req, res) => {
+        return super.use(buildResponseHandler<ResponsePayload>(this, async (payload, req, res) => {
             let body = payload.getBuffer();
             body = await replacer(body, req, res);
             payload.setBuffer(body);
@@ -105,7 +125,7 @@ export class ResponseHandlerBuilder extends RequestHandlerBuilder {
      */
 
     interceptStream(interceptor: (upstream: Readable, req: Request, res: Response) => (Readable | Promise<Readable>)): RequestHandler {
-        return super.use(buildResponseHandler<Readable>(this._if, async (payload, req, res) => {
+        return super.use(buildResponseHandler<Readable>(this, async (payload, req, res) => {
             return interceptor(payload, req, res);
         }, () => new ReadablePayload()));
     }
@@ -116,7 +136,7 @@ export class ResponseHandlerBuilder extends RequestHandlerBuilder {
      */
 
     getString(receiver: (body: string, req?: Request, res?: Response) => (any | Promise<any>)): RequestHandler {
-        return super.use(buildResponseHandler<ResponsePayload>(this._if, async (payload, req, res) => {
+        return super.use(buildResponseHandler<ResponsePayload>(this, async (payload, req, res) => {
             const body = payload.getString();
             await receiver(body, req, res);
         }));
@@ -128,7 +148,7 @@ export class ResponseHandlerBuilder extends RequestHandlerBuilder {
      */
 
     getBuffer(receiver: (body: Buffer, req?: Request, res?: Response) => (any | Promise<any>)): RequestHandler {
-        return super.use(buildResponseHandler<ResponsePayload>(this._if, async (payload, req, res) => {
+        return super.use(buildResponseHandler<ResponsePayload>(this, async (payload, req, res) => {
             const body = payload.getBuffer();
             await receiver(body, req, res);
         }));
@@ -140,7 +160,7 @@ export class ResponseHandlerBuilder extends RequestHandlerBuilder {
      */
 
     getRequest(receiver: (req: Request) => (any | Promise<any>)): RequestHandler {
-        return super.use(buildResponseHandler<ResponsePayload>(this._if, async (payload, req, res) => {
+        return super.use(buildResponseHandler<ResponsePayload>(this, async (payload, req, res) => {
             await receiver(req);
         }));
     }
@@ -150,7 +170,7 @@ export class ResponseHandlerBuilder extends RequestHandlerBuilder {
      */
 
     getResponse(receiver: (res: Response) => (any | Promise<any>)): RequestHandler {
-        return super.use(buildResponseHandler<ResponsePayload>(this._if, async (payload, req, res) => {
+        return super.use(buildResponseHandler<ResponsePayload>(this, async (payload, req, res) => {
             await receiver(res);
         }));
     }
@@ -185,6 +205,32 @@ function AND<T>(A: CondFn<T>, B: CondFn<T>): CondFn<T> {
     return (arg: T) => (A(arg) && B(arg));
 }
 
+function IF(tester: (arg: Request) => boolean, handler: RequestHandler): RequestHandler {
+    return (req, res, next) => tester(req) ? handler(req, res, next) : next();
+}
+
 function JOIN(A: RequestHandler, B: RequestHandler): RequestHandler {
     return (req, res, next) => A(req, res, err => (err ? next(err) : B(req, res, next)));
+}
+
+function asyncHandler(handler: RequestHandler, errorHandler?: ErrorHandler): RequestHandler {
+    return async (req, res, next) => {
+        try {
+            return await handler(req, res, cb);
+        } catch (err) {
+            return cb(err);
+        }
+
+        function cb(err?: Error) {
+            if (!next) return;
+            const _next = next;
+            next = null; // ignore next
+
+            if (err && errorHandler) {
+                return errorHandler(err, req, res, _next);
+            } else {
+                return _next(err);
+            }
+        }
+    }
 }

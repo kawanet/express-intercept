@@ -68,11 +68,12 @@ export class MWSuperTest {
     }
 }
 
-function wrapRequest(req: supertest.Request): supertest.Test {
+function wrapRequest(req: supertest.Test): supertest.Test {
     const _req = req as unknown as { assert: (resError: any, res: any, fn: any) => void };
     const _assert = _req.assert;
+
     _req.assert = function (resError, res, fn) {
-        let err: string = res.header["x-error"];
+        let err: string = res?.header["x-error"];
         if (err) {
             err = Buffer.from(err, "base64").toString();
             resError = new Error(err);
@@ -82,7 +83,8 @@ function wrapRequest(req: supertest.Request): supertest.Test {
             return _assert.call(this, resError, res, fn);
         }
     };
-    return req as supertest.Test;
+
+    return req;
 }
 
 function catchError(err: string | Error, req: Request, res: Response) {

@@ -9,6 +9,8 @@ import {mwsupertest} from "./lib/middleware-supertest";
 
 const TITLE = __filename.split("/").pop();
 
+const silentHandler = () => responseHandler((err, req, res) => res.status(500).end());
+
 describe(TITLE, () => {
     const success: RequestHandler = (req, res) => res.send("SUCCESS");
     // const NOP: RequestHandler = (req, res, next) => next();
@@ -26,35 +28,35 @@ describe(TITLE, () => {
     // Express.js captures errors thrown at upstream requestHandler methods.
     // We need only handle errors thrown at downstream responseHandler methods.
 
-    test("responseHandler().if()", responseHandler().if(() => {
+    test("responseHandler().if()", silentHandler().if(() => {
         throw new Error("if()");
     }).getRequest(() => null));
 
-    test("responseHandler().replaceString()", responseHandler().replaceString(() => {
+    test("responseHandler().replaceString()", silentHandler().replaceString(() => {
         throw new Error("replaceString()");
     }));
 
-    test("responseHandler().replaceBuffer()", responseHandler().replaceBuffer(() => {
+    test("responseHandler().replaceBuffer()", silentHandler().replaceBuffer(() => {
         throw new Error("replaceBuffer()");
     }));
 
-    test("responseHandler().interceptStream()", responseHandler().interceptStream(() => {
+    test("responseHandler().interceptStream()", silentHandler().interceptStream(() => {
         throw new Error("interceptStream()");
     }));
 
-    test("responseHandler().getString()", responseHandler().getString(() => {
+    test("responseHandler().getString()", silentHandler().getString(() => {
         throw new Error("getString()");
     }));
 
-    test("responseHandler().getBuffer()", responseHandler().getBuffer(() => {
+    test("responseHandler().getBuffer()", silentHandler().getBuffer(() => {
         throw new Error("getBuffer()");
     }));
 
-    test("responseHandler().getRequest()", responseHandler().getRequest(() => {
+    test("responseHandler().getRequest()", silentHandler().getRequest(() => {
         throw new Error("getRequest()");
     }));
 
-    test("responseHandler().getResponse()", responseHandler().getResponse(() => {
+    test("responseHandler().getResponse()", silentHandler().getResponse(() => {
         throw new Error("getResponse()");
     }));
 

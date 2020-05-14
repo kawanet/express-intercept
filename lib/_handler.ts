@@ -1,6 +1,6 @@
 // _handler.ts
 
-import {Request, RequestHandler, Response} from "express";
+import {ErrorRequestHandler, Request, RequestHandler, Response} from "express";
 import {ResponsePayload} from "./_payload";
 import {Writable} from "stream";
 
@@ -11,19 +11,18 @@ interface IReadable {
     pipe: (destination: Writable) => Writable;
 }
 
-export function buildRequestHandler(requestFor: ((req: Request) => boolean), handler: RequestHandler): RequestHandler {
-    // without .for() condition
-    if (!requestFor) return handler;
-
-    // with .for() condition
-    return (req, res, next) => requestFor(req) ? handler(req, res, next) : next();
+interface BuilderOptions {
+    _if: ((res: Response) => boolean);
+    _error: ErrorRequestHandler;
 }
 
 export function buildResponseHandler<T extends IReadable>(
-    responseIf: (res: Response) => boolean,
+    options?: BuilderOptions,
     interceptor?: (payload: T, req: Request, res: Response) => (Promise<T | void>),
     container?: () => T
 ): RequestHandler {
+    const {_error, _if} = options || {} as BuilderOptions;
+
     return (req, res, next) => {
         let started: boolean;
         let stopped: boolean;
@@ -37,24 +36,28 @@ export function buildResponseHandler<T extends IReadable>(
 
             const item = [].slice.call(arguments);
             if ("function" === typeof item[item.length - 1]) cb = item.pop();
-            if (item[0]) payload.push(item[0], item[1]);
-            if (cb) cb(); // received
+            if (payload && item[0]) payload.push(item[0], item[1]);
+            if (cb) cb(); // always success
+
             return true;
         };
 
         const original_end = res.end;
         const intercept_end = res.end = function (chunk?: any, encoding?: any, cb?: CallbackFn) {
-            if (!started) start();
+            if (!stopped && !started) start();
             const _stopped = stopped;
             if (!stopped) stop();
             if (_stopped) return original_end.apply(this, arguments);
 
             const item = [].slice.call(arguments);
             if ("function" === typeof item[item.length - 1]) cb = item.pop();
-            if (item[0]) payload.push(item[0], item[1]);
-            if (!cb) cb = (e?: Error) => null;
-            payload.push(null);
-            finish().then(() => cb(), cb);
+            if (payload && item[0]) payload.push(item[0], item[1]);
+            if (payload) payload.push(null); // EOF
+
+            if (cb) cb(); // always success
+            if (error) sendError(error);
+            if (!error) finish().catch(sendError);
+
             return this;
         };
 
@@ -64,9 +67,10 @@ export function buildResponseHandler<T extends IReadable>(
             started = true;
 
             try {
-                if (responseIf && !responseIf(res)) return stop(); // .if()
+                if (_if && !_if(res)) return stop();
             } catch (e) {
                 error = e;
+                return;
             }
 
             payload = container ? container() : new ResponsePayload(res) as IReadable;
@@ -81,24 +85,12 @@ export function buildResponseHandler<T extends IReadable>(
         }
 
         async function finish() {
-            let readable: IReadable;
-
-            try {
-                if (!error && interceptor) {
-                    readable = await interceptor(payload as T, req, res) || payload;
-                }
-            } catch (e) {
-                error = e;
-            }
-
-            // change response status code if failed before sending body
-            if (error) {
-                res.status(500);
-                res.end();
-                return Promise.reject(error);
-            }
-
+            const readable = interceptor && await interceptor(payload as T, req, res) || payload;
             readable.pipe(res);
+        }
+
+        function sendError(err?: Error) {
+            if (_error) _error(err, req, res, () => null);
         }
     };
 }
