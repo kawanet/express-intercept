@@ -26,6 +26,36 @@ describe(TITLE, () => {
             .expect(200)
             .expect("SUCCESS");
     });
+
+    it("Accept-Encoding: identity", async () => {
+        const app = express();
+        const content = "Accept-Encoding: identity";
+
+        app.use(requestHandler().getRequest(req => req.headers["accept-encoding"] = "identity"));
+
+        // compressed
+        app.use(responseHandler().getResponse(res => res.setHeader("x-encoding-2", String(res.getHeader("content-encoding") || "(uncompressed)"))));
+        app.use(responseHandler().getResponse(res => res.setHeader("x-length-2", String(res.getHeader("content-length")))));
+
+        // compression
+        app.use(responseHandler().compressResponse());
+
+        // uncompressed
+        app.use(responseHandler().getResponse(res => res.setHeader("x-encoding-1", String(res.getHeader("content-encoding") || "(uncompressed)"))));
+        app.use(responseHandler().getResponse(res => res.setHeader("x-length-1", String(res.getHeader("content-length")))));
+
+        // response uncompressed body
+        app.use(requestHandler().use((req, res) => res.type("text/html").send(content)));
+
+        await mwsupertest(app)
+            .get("/")
+            .expect(200)
+            .expect("x-encoding-1", "(uncompressed)")
+            .expect("x-length-1", String(content.length))
+            .expect("x-encoding-2", "(uncompressed)")
+            .expect("x-length-2", String(content.length))
+            .expect(res => assert.equal(res.text, content));
+    });
 });
 
 function test(encoding: string, encoder: (buf: Buffer) => Buffer) {

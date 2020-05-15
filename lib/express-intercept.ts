@@ -178,14 +178,16 @@ class ResponseHandlerBuilder extends RequestHandlerBuilder {
     compressResponse(): RequestHandler {
         return this.replaceBuffer((buf, req, res) => {
             const encoding = findEncoding(req.header("Accept-Encoding"));
-            res.setHeader("Content-Encoding", encoding); // signal to compress with the encoding
+            if (encoding) {
+                res.setHeader("Content-Encoding", encoding); // signal to compress with the encoding
+            }
             return buf;
         });
     }
 
     decompressResponse(): RequestHandler {
         return this.replaceBuffer((buf, req, res) => {
-            res.removeHeader("Content-Encoding"); // signal not to compress again
+            res.removeHeader("Content-Encoding"); // signal NOT to compress
             return buf;
         });
     }
