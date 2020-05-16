@@ -2,7 +2,7 @@
 
 Build Express middleware to intercept / replace / inspect / transform response
 
-![Node.js CI](https://github.com/kawanet/express-intercept/workflows/Node.js%20CI/badge.svg?branch=master)
+[![Node.js CI](https://github.com/kawanet/express-intercept/workflows/Node.js%20CI/badge.svg?branch=master)](https://github.com/kawanet/express-intercept/actions/)
 [![npm version](https://badge.fury.io/js/express-intercept.svg)](https://www.npmjs.com/package/express-intercept)
 
 ## SYNOPSIS
@@ -47,9 +47,9 @@ app.use(responseHandler().decompressResponse());
 
 ## METHODS
 
-See TypeScript definition
+See TypeScript declaration
 [express-intercept.d.ts](https://github.com/kawanet/express-intercept/blob/master/types/express-intercept.d.ts)
-for detail.
+for more detail.
 
 #### `for(condition: (req: Request) => boolean)`
 
