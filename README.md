@@ -34,15 +34,15 @@ app.use(responseHandlder().getResponse(res => console.warn(res.getHeader("set-co
 
 // transform response as a Readable stream
 
-app.use(responseHandler().interceptStream(upstream => upstream.pipe(new Transform({...}))));
+app.use(responseHandler().interceptStream(upstream => upstream.pipe(new stream.Transform({...}))));
 
-// compress response
+// compress response if response Content-Type is a text type.
 
-app.use(responseHandler().compressResponse());
+app.use(responseHandler().if(res => /text/.test(String(res.getHeader("content-type")))).compressResponse());
 
-// decompress response
+// decompress response if statusCode is OK
 
-app.use(responseHandler().decompressResponse());
+app.use(responseHandler().if(res => (+res.statusCode === 200)).decompressResponse());
 ```
 
 ## METHODS
@@ -107,10 +107,22 @@ It works at response returning phase after `res.send()` fired.
 It returns a RequestHandler which connects multiple RequestHandlers.
 Use this after `requestHandler()` method but not after `responseHandlder()`.
 
+### `compressResponse()`
+
+It returns a RequestHandler to compress the response content.
+
+### `decompressResponse()`
+
+It returns a RequestHandler to decompress the response content.
+
 ## SEE ALSO
 
+- https://github.com/kawanet/express-compress
+- https://github.com/kawanet/express-intercept
 - https://github.com/kawanet/express-sed
 - https://github.com/kawanet/express-tee
+- https://github.com/kawanet/middleware-supertest
+- https://github.com/kawanet/weboverlay
 
 ## LICENSE
 
