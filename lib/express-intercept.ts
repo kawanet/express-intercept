@@ -36,7 +36,7 @@ class RequestHandlerBuilder {
      */
 
     for(condition: (req: Request) => boolean): this {
-        this._for = (this._for && condition) ? AND<Request>(this._for, condition) : (this._for || condition);
+        this._for = AND<Request>(this._for, condition);
         return this;
     }
 
@@ -86,7 +86,7 @@ class ResponseHandlerBuilder extends RequestHandlerBuilder {
      */
 
     if(condition: (res: Response) => boolean): this {
-        this._if = (this._if && condition) ? AND<Response>(this._if, condition) : (this._if || condition);
+        this._if = AND<Response>(this._if, condition);
         return this;
     }
 
@@ -207,5 +207,5 @@ class ReadablePayload extends Readable {
  */
 
 function AND<T>(A: CondFn<T>, B: CondFn<T>): CondFn<T> {
-    return (arg: T) => (A(arg) && B(arg));
+    return (A && B) ? ((arg: T) => (A(arg) && B(arg))) : (A || B);
 }

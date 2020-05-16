@@ -42,11 +42,12 @@
     "url": "git+https://github.com/kawanet/express-intercept.git"
   },
   "scripts": {
-    "build": "./node_modules/.bin/tsc -p .",
+    "build": "npm run build-lib && npm run build-types",
+    "build-lib": "./node_modules/.bin/tsc -p .",
     "build-types": "./node_modules/.bin/tsc -p types",
     "fixpack": "fixpack",
     "mocha": "./node_modules/.bin/mocha -R spec test/*.js",
-    "test": "npm run build && npm run build-types && npm run mocha",
+    "test": "npm run mocha",
     "tsc-watch": "tsc --watch"
   },
   "typings": "./types/express-intercept.d.ts"

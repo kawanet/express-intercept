@@ -90,7 +90,7 @@ export function buildResponseHandler<T extends IReadable>(
         }
 
         function sendError(err?: Error) {
-            if (_error) _error(err, req, res, () => null);
+            if (_error) _error(err, req, res, (e?: any): void => null);
         }
     };
 }
