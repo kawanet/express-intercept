@@ -7,7 +7,7 @@ import {buildResponseHandler} from "./_handler";
 import {findEncoding} from "./_compression";
 import {IF, ASYNC, CATCH} from "async-request-handler";
 
-type CondFn<T> = (arg: T) => boolean;
+type CondFn<T> = (arg: T) => (boolean | Promise<boolean>);
 
 export function requestHandler(errorHandler?: ErrorRequestHandler) {
     return new RequestHandlerBuilder(errorHandler || defaultErrorHandler);
@@ -35,12 +35,12 @@ class RequestHandlerBuilder {
      * Those tests could avoid unnecessary work later.
      */
 
-    for(condition: (req: Request) => boolean): this {
+    for(condition: (req: Request) => (boolean | Promise<boolean>)): this {
         this._for = AND<Request>(this._for, condition);
         return this;
     }
 
-    _for: ((req: Request) => boolean);
+    _for: ((req: Request) => (boolean | Promise<boolean>));
 
     /**
      * It returns a RequestHandler which connects multiple RequestHandlers.
@@ -85,12 +85,12 @@ class ResponseHandlerBuilder extends RequestHandlerBuilder {
      * Those tests could avoid unnecessary response interception work including additional buffering.
      */
 
-    if(condition: (res: Response) => boolean): this {
+    if(condition: (res: Response) => (boolean | Promise<boolean>)): this {
         this._if = AND<Response>(this._if, condition);
         return this;
     }
 
-    _if: ((res: Response) => boolean);
+    _if: ((res: Response) => (boolean | Promise<boolean>));
 
     /**
      * It returns a RequestHandler to replace the response content body as a string.
@@ -207,5 +207,18 @@ class ReadablePayload extends Readable {
  */
 
 function AND<T>(A: CondFn<T>, B: CondFn<T>): CondFn<T> {
-    return (A && B) ? ((arg: T) => (A(arg) && B(arg))) : (A || B);
+    if (!A) return B;
+    if (!B) return A;
+
+    return (arg: T) => {
+        let result = A(arg);
+        // result: false
+        if (!result) return false;
+        // result: true
+        if (!isThenable(result as Promise<boolean>)) return B(arg);
+        // result: Promise<boolean>
+        return (result as Promise<boolean>).then(result => (result && B(arg)));
+    };
 }
+
+const isThenable = <T>(value: Promise<T>): boolean => ("function" === typeof (value.then));

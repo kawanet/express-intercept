@@ -12,7 +12,7 @@ interface IReadable {
 }
 
 interface BuilderOptions {
-    _if: ((res: Response) => boolean);
+    _if: ((res: Response) => (boolean | Promise<boolean>));
     _error: ErrorRequestHandler;
 }
 
@@ -28,6 +28,7 @@ export function buildResponseHandler<T extends IReadable>(
         let stopped: boolean;
         let payload: IReadable;
         let error: Error;
+        let condition: boolean | Promise<boolean>;
 
         const original_write = res.write;
         const intercept_write = res.write = function (chunk: any, encoding?: any, cb?: CallbackFn) {
@@ -67,7 +68,12 @@ export function buildResponseHandler<T extends IReadable>(
             started = true;
 
             try {
-                if (_if && !_if(res)) return stop();
+                // _if === null -> RUN
+                // _if(res) === false -> SKIP
+                // _if(res) === true -> RUN
+                // _if(res) instanceof Promise -> RUN
+                condition = !_if || _if(res);
+                if (!condition) return stop();
             } catch (e) {
                 error = e;
                 return;
@@ -85,7 +91,7 @@ export function buildResponseHandler<T extends IReadable>(
         }
 
         async function finish() {
-            const readable = interceptor && await interceptor(payload as T, req, res) || payload;
+            const readable = (await condition) && interceptor && (await interceptor(payload as T, req, res)) || payload;
             readable.pipe(res);
         }
 
