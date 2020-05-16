@@ -178,6 +178,10 @@ class ResponseHandlerBuilder extends RequestHandlerBuilder {
         }));
     }
 
+    /**
+     * It returns a RequestHandler to compress the response content.
+     */
+
     compressResponse(): RequestHandler {
         return this.replaceBuffer((buf, req, res) => {
             const encoding = findEncoding(req.header("Accept-Encoding"));
@@ -187,6 +191,10 @@ class ResponseHandlerBuilder extends RequestHandlerBuilder {
             return buf;
         });
     }
+
+    /**
+     * It returns a RequestHandler to decompress the response content.
+     */
 
     decompressResponse(): RequestHandler {
         return this.replaceBuffer((buf, req, res) => {

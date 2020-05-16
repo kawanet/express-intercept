@@ -32,9 +32,17 @@ app.use(requestHandler().getRequest(req => console.warn(req.getHeader("cookie"))
 
 app.use(responseHandlder().getResponse(res => console.warn(res.getHeader("set-cookie"))));
 
-// compress response. see test/lib/compress.ts for real code
+// transform response as a Readable stream
 
-app.use(responseHandler().interceptStream(upstream => upstream.pipe(zlib.createBrotliCompress())));
+app.use(responseHandler().interceptStream(upstream => upstream.pipe(new Transform({...}))));
+
+// compress response
+
+app.use(responseHandler().compressResponse());
+
+// decompress response
+
+app.use(responseHandler().decompressResponse());
 ```
 
 ## METHODS

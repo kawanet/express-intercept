@@ -70,7 +70,13 @@ declare class ResponseHandlerBuilder extends RequestHandlerBuilder {
      * It returns a RequestHandler to inspect express Response object (aka `res`) on its response returning phase after res.send() fired.
      */
     getResponse(receiver: (res: Response) => (any | Promise<any>)): RequestHandler;
+    /**
+     * It returns a RequestHandler to compress the response content.
+     */
     compressResponse(): RequestHandler;
+    /**
+     * It returns a RequestHandler to decompress the response content.
+     */
     decompressResponse(): RequestHandler;
 }
 export {};
