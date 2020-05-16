@@ -1,9 +1,15 @@
+// middleware-supertest.ts
+
 import * as express from "express";
 import {Request, RequestHandler, Response} from "express";
 import {responseHandler} from "../../lib/express-intercept";
 import * as supertest from "supertest";
 
 export const mwsupertest = (app: RequestHandler) => new MWSuperTest(app);
+
+/**
+ * Testing Express.js RequestHandler middlewares both on server-side and client-side
+ */
 
 export class MWSuperTest {
     private _agent: supertest.SuperTest<any>;
@@ -13,7 +19,7 @@ export class MWSuperTest {
         //
     }
 
-    agent() {
+    private agent() {
         return this._agent || (this._agent = supertest(express().use(this.handlers).use(this.app)));
     }
 
@@ -23,57 +29,96 @@ export class MWSuperTest {
         return this;
     }
 
-    getString(test: (str: string) => any): this {
+    /**
+     * defines a test function to test the response body as a `string` on server-side.
+     */
+
+    getString(test: (str: string) => (any | Promise<any>)): this {
         return this.use(responseHandler().getString((str, req, res) => {
             return Promise.resolve(str).then(test).catch(err => catchError(err, req, res));
         }));
     }
 
-    getBuffer(test: (buf: Buffer) => any): this {
+    /**
+     * defines a test function to test the response body as a `Buffer` on server-side.
+     */
+
+    getBuffer(test: (buf: Buffer) => (any | Promise<any>)): this {
         return this.use(responseHandler().getBuffer((buf, req, res) => {
             return Promise.resolve(buf).then(test).catch(err => catchError(err, req, res));
         }));
     }
 
-    getRequest(test: (req: Request) => any): this {
+    /**
+     * defines a test function to test the response object aka `res` on server-side.
+     */
+
+    getRequest(test: (req: Request) => (any | Promise<any>)): this {
         return this.use(responseHandler().getBuffer((buf, req, res) => {
             return Promise.resolve().then(() => test(req)).catch(err => catchError(err, req, res));
         }));
     }
 
-    getResponse(test: (res: Response) => any): this {
+    /**
+     * defines a test function to test the request object aka `req` on server-side.
+     */
+
+    getResponse(test: (res: Response) => (any | Promise<any>)): this {
         return this.use(responseHandler().getBuffer((buf, req, res) => {
             return Promise.resolve().then(() => test(res)).catch(err => catchError(err, req, res));
         }));
     }
 
+    /**
+     * perform a HTTP `DELETE` request and returns a SuperTest object to continue tests on client-side.
+     */
+
     delete(url: string) {
         return wrapRequest(this.agent().delete.apply(this.agent, arguments));
     }
+
+    /**
+     * perform a HTTP `GET` request and returns a SuperTest object to continue tests on client-side.
+     */
 
     get(url: string) {
         return wrapRequest(this.agent().get.apply(this.agent, arguments));
     }
 
+    /**
+     * perform a HTTP `HEAD` request and returns a SuperTest object to continue tests on client-side.
+     */
+
     head(url: string) {
         return wrapRequest(this.agent().head.apply(this.agent, arguments));
     }
 
+    /**
+     * perform a HTTP `POST` request and returns a SuperTest object to continue tests on client-side.
+     */
+
     post(url: string) {
         return wrapRequest(this.agent().post.apply(this.agent, arguments));
     }
+
+    /**
+     * perform a HTTP `PUT` request and returns a SuperTest object to continue tests on client-side.
+     */
 
     put(url: string) {
         return wrapRequest(this.agent().put.apply(this.agent, arguments));
     }
 }
 
-function wrapRequest(req: supertest.Test): supertest.Test {
+/**
+ * @private
+ */
+
+function wrapRequest(req: supertest.Request): supertest.Test {
     const _req = req as unknown as { assert: (resError: any, res: any, fn: any) => void };
     const _assert = _req.assert;
-
     _req.assert = function (resError, res, fn) {
-        let err: string = res?.header["x-error"];
+        let err: string = res.header["x-mwsupertest"];
         if (err) {
             err = Buffer.from(err, "base64").toString();
             resError = new Error(err);
@@ -83,14 +128,17 @@ function wrapRequest(req: supertest.Test): supertest.Test {
             return _assert.call(this, resError, res, fn);
         }
     };
-
-    return req;
+    return req as supertest.Test;
 }
+
+/**
+ * @private
+ */
 
 function catchError(err: string | Error, req: Request, res: Response) {
     if (!err) err = "error";
     const e: Error = err as Error;
     err = e.stack || e.message || err;
     err = Buffer.from(err).toString("base64");
-    res.setHeader("x-error", err);
+    res.setHeader("x-mwsupertest", err);
 }
