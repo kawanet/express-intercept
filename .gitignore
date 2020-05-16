@@ -1,3 +1,4 @@
+*.tgz
 *~
 .DS_Store
 .Thumbs
@@ -7,6 +8,7 @@
 node_modules/
 npm-debug.log*
 package-lock.json
+package/
 test/**/*.js
 types/_*.d.ts
 ~$*

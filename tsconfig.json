@@ -15,7 +15,6 @@
     "strictNullChecks": false,
     "target": "ES2018",
     "types": [
-      "express",
       "mocha",
       "node"
     ]
