@@ -6,6 +6,9 @@
   "contributors": [
     "Yusuke Kawasaki <u-suke@kawa.net>"
   ],
+  "dependencies": {
+    "async-request-handler": "git+https://github.com/kawanet/async-request-handler.git"
+  },
   "devDependencies": {
     "@types/express": "^4.17.6",
     "@types/mocha": "^7.0.2",

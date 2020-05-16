@@ -5,10 +5,9 @@ import {Readable} from "stream";
 import {ResponsePayload} from "./_payload";
 import {buildResponseHandler} from "./_handler";
 import {findEncoding} from "./_compression";
+import {IF, ASYNC, CATCH} from "async-request-handler";
 
 type CondFn<T> = (arg: T) => boolean;
-
-const NOP: RequestHandler = (req, res, next) => next();
 
 export function requestHandler(errorHandler?: ErrorRequestHandler) {
     return new RequestHandlerBuilder(errorHandler || defaultErrorHandler);
@@ -49,15 +48,19 @@ class RequestHandlerBuilder {
      */
 
     use(handler: RequestHandler, ...more: RequestHandler[]): RequestHandler {
-        for (const mw of more) {
-            if (mw) handler = handler ? JOIN(handler, mw) : mw;
+        let {_for, _error} = this;
+
+        if (more.length) {
+            handler = ASYNC(handler, ASYNC.apply(null, more));
+        } else {
+            handler = ASYNC(handler);
         }
 
-        if (!handler) handler = NOP;
+        if (_for) handler = IF(_for, handler);
 
-        if (this._for) handler = IF(this._for, handler);
+        if (_error) handler = ASYNC(handler, CATCH(_error));
 
-        return asyncHandler(handler, this._error);
+        return handler;
     }
 
     /**
@@ -205,34 +208,4 @@ class ReadablePayload extends Readable {
 
 function AND<T>(A: CondFn<T>, B: CondFn<T>): CondFn<T> {
     return (arg: T) => (A(arg) && B(arg));
-}
-
-function IF(tester: (arg: Request) => boolean, handler: RequestHandler): RequestHandler {
-    return (req, res, next) => tester(req) ? handler(req, res, next) : next();
-}
-
-function JOIN(A: RequestHandler, B: RequestHandler): RequestHandler {
-    return (req, res, next) => A(req, res, err => (err ? next(err) : B(req, res, next)));
-}
-
-function asyncHandler(handler: RequestHandler, errorHandler?: ErrorRequestHandler): RequestHandler {
-    return async (req, res, next) => {
-        try {
-            return await handler(req, res, cb);
-        } catch (err) {
-            return cb(err);
-        }
-
-        function cb(err?: Error) {
-            if (!next) return;
-            const _next = next;
-            next = null; // ignore next
-
-            if (err && errorHandler) {
-                return errorHandler(err, req, res, _next);
-            } else {
-                return _next(err);
-            }
-        }
-    }
 }
