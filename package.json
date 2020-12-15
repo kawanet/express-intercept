@@ -22,7 +22,7 @@
   "files": [
     "LICENSE",
     "README.md",
-    "lib/",
+    "lib/*.js",
     "types/express-intercept.d.ts"
   ],
   "homepage": "https://github.com/kawanet/express-intercept#readme",
