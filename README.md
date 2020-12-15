@@ -107,11 +107,11 @@ It works at response returning phase after `res.send()` fired.
 It returns a RequestHandler which connects multiple RequestHandlers.
 Use this after `requestHandler()` method but not after `responseHandler()`.
 
-### `compressResponse()`
+#### `compressResponse()`
 
 It returns a RequestHandler to compress the response content.
 
-### `decompressResponse()`
+#### `decompressResponse()`
 
 It returns a RequestHandler to decompress the response content.
 
