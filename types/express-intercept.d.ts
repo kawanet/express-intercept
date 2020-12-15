@@ -5,14 +5,14 @@ export declare function requestHandler(errorHandler?: ErrorRequestHandler): Requ
 export declare function responseHandler(errorHandler?: ErrorRequestHandler): ResponseHandlerBuilder;
 declare class RequestHandlerBuilder {
     constructor(errorHandler?: ErrorRequestHandler);
-    _error: ErrorRequestHandler;
+
     /**
      * It appends a test condition to perform the RequestHandler.
      * Call this for multiple times to add multiple tests in AND condition.
      * Those tests could avoid unnecessary work later.
      */
     for(condition: (req: Request) => (boolean | Promise<boolean>)): this;
-    _for: ((req: Request) => (boolean | Promise<boolean>));
+
     /**
      * It returns a RequestHandler which connects multiple RequestHandlers.
      * Use this after `requestHandler()` method but not after `responseHandler()`.
@@ -32,7 +32,7 @@ declare class ResponseHandlerBuilder extends RequestHandlerBuilder {
      * Those tests could avoid unnecessary response interception work including additional buffering.
      */
     if(condition: (res: Response) => (boolean | Promise<boolean>)): this;
-    _if: ((res: Response) => (boolean | Promise<boolean>));
+
     /**
      * It returns a RequestHandler to replace the response content body as a string.
      * It gives a single string even when the response stream is chunked and/or compressed.

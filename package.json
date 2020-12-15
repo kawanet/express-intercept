@@ -44,7 +44,7 @@
   "scripts": {
     "build": "npm run build-lib && npm run build-types",
     "build-lib": "./node_modules/.bin/tsc -p .",
-    "build-types": "./node_modules/.bin/tsc -p types",
+    "build-types": "./node_modules/.bin/tsc -p types && perl -i -pe 's/^ *_.*$//' types/express-intercept.d.ts",
     "fetch-mwsupertest": "curl -s https://raw.githubusercontent.com/kawanet/middleware-supertest/master/lib/middleware-supertest.ts | sed 's#express-intercept#../../lib/express-intercept#' > test/lib/middleware-supertest.ts && npm run build-lib",
     "fixpack": "fixpack",
     "mocha": "./node_modules/.bin/mocha -R spec test/*.js",
