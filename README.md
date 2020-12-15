@@ -9,20 +9,20 @@ Build Express middleware to intercept / replace / inspect / transform response
 
 ```js
 const express = require("express");
-const {requestHandler, responseHandlder} = require("express-intercept");
+const {requestHandler, responseHandler} = require("express-intercept");
 const app = express();
 
 // replace response string if response Content-Type is html.
 
-app.use(responseHandlder().if(res => /html/i.test(res.getHeader("content-type"))).replaceString(body => body.replace(/MacBook/g, "Surface")));
+app.use(responseHandler().if(res => /html/i.test(res.getHeader("content-type"))).replaceString(body => body.replace(/MacBook/g, "Surface")));
 
 // log access_token for request path: /login
 
-app.use(responseHandlder().for(req => (req.path === "/login")).getString(body => console.warn(JSON.parse(body).access_token)));
+app.use(responseHandler().for(req => (req.path === "/login")).getString(body => console.warn(JSON.parse(body).access_token)));
 
 // dump response body to file if statusCode is Internal Server Error
 
-app.use(responseHandlder().if(res => (+res.statusCode === 500)).getBuffer(body => fs.promises.writeFile("debug", body)));
+app.use(responseHandler().if(res => (+res.statusCode === 500)).getBuffer(body => fs.promises.writeFile("debug", body)));
 
 // log cookie sent in request
 
@@ -30,7 +30,7 @@ app.use(requestHandler().getRequest(req => console.warn(req.getHeader("cookie"))
 
 // log cookie sending in response
 
-app.use(responseHandlder().getResponse(res => console.warn(res.getHeader("set-cookie"))));
+app.use(responseHandler().getResponse(res => console.warn(res.getHeader("set-cookie"))));
 
 // transform response as a Readable stream
 
@@ -95,7 +95,7 @@ It manages the response stream even when chunked or compressed.
 
 It returns a RequestHandler to inspect express Request object (aka `req`).
 With `requestHandler()`, it works at request phase as normal RequestHandler works.
-With `responseHandlder()`, it works at response returning phase after `res.send()` fired.
+With `responseHandler()`, it works at response returning phase after `res.send()` fired.
 
 #### `getResponse(receiver: (res: Response) => void)`
 
@@ -105,7 +105,7 @@ It works at response returning phase after `res.send()` fired.
 #### `use(handler: RequestHandler, ...more)`
 
 It returns a RequestHandler which connects multiple RequestHandlers.
-Use this after `requestHandler()` method but not after `responseHandlder()`.
+Use this after `requestHandler()` method but not after `responseHandler()`.
 
 ### `compressResponse()`
 

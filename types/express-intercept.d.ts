@@ -15,7 +15,7 @@ declare class RequestHandlerBuilder {
     _for: ((req: Request) => (boolean | Promise<boolean>));
     /**
      * It returns a RequestHandler which connects multiple RequestHandlers.
-     * Use this after `requestHandler()` method but not after `responseHandlder()`.
+     * Use this after `requestHandler()` method but not after `responseHandler()`.
      */
     use(handler: RequestHandler, ...more: RequestHandler[]): RequestHandler;
     /**
@@ -63,7 +63,7 @@ declare class ResponseHandlerBuilder extends RequestHandlerBuilder {
     getBuffer(receiver: (body: Buffer, req?: Request, res?: Response) => (any | Promise<any>)): RequestHandler;
     /**
      * It returns a RequestHandler to inspect express Request object (aka `req`).
-     * With `responseHandlder()`, it works at response returning phase after `res.send()` fired.
+     * With `responseHandler()`, it works at response returning phase after `res.send()` fired.
      */
     getRequest(receiver: (req: Request) => (any | Promise<any>)): RequestHandler;
     /**
