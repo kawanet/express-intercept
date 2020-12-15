@@ -20,35 +20,45 @@ describe(TITLE, () => {
         return body;
     };
 
-    test("transform stream: send()", (req, res) => {
-        res.send(source);
+    it("transform stream: send()", async () => {
+        await test((req, res) => {
+            res.send(source);
+        });
     });
 
-    test("transform stream: write()", (req, res) => {
-        res.status(200).type("html");
-        res.write(source);
-        res.end();
+    it("transform stream: write()", async () => {
+        await test((req, res) => {
+            res.status(200).type("html");
+            res.write(source);
+            res.end();
+        });
     });
 
-    test("transform stream: end()", (req, res) => {
-        res.status(200).type("html");
-        res.end(source);
+    it("transform stream: end()", async () => {
+        await test((req, res) => {
+            res.status(200).type("html");
+            res.end(source);
+        });
     });
 
-    test("transform stream: chunked", (req, res) => {
-        res.status(200).type("html");
-        source.split("").forEach(c => res.write(c));
-        res.end();
+    it("transform stream: chunked", async () => {
+        await test((req, res) => {
+            res.status(200).type("html");
+            source.split("").forEach(c => res.write(c));
+            res.end();
+        });
     });
 
-    test("transform string: chunked", (req, res) => {
-        res.status(200).type("html");
-        source.split("").forEach(c => res.write(c));
-        res.end();
-    }, responseHandler().replaceString(replacer));
+    it("transform string: chunked", async () => {
+        await test((req, res) => {
+            res.status(200).type("html");
+            source.split("").forEach(c => res.write(c));
+            res.end();
+        }, responseHandler().replaceString(replacer));
+    });
 
-    function test(name: string, handler: RequestHandler, transform?: RequestHandler) {
-        it(name, async () => {
+    async function test(handler: RequestHandler, transform?: RequestHandler): Promise<void> {
+        {
             const app = express();
 
             app.use(transform || responseHandler().interceptStream((upstream, req, res) => {
@@ -71,6 +81,6 @@ describe(TITLE, () => {
                 .get("/")
                 .expect(200)
                 .expect(expected);
-        });
+        }
     }
 });
