@@ -137,8 +137,11 @@ function wrapRequest(req: supertest.Request): supertest.Test {
 
 function catchError(err: string | Error, req: Request, res: Response) {
     if (!err) err = "error";
-    const e: Error = err as Error;
-    err = e.stack || e.message || err;
+
+    if ("string" !== typeof err) {
+        err = err.stack || err.message || err + "";
+    }
+
     err = Buffer.from(err).toString("base64");
     res.setHeader("x-mwsupertest", err);
 }
