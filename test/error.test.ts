@@ -9,7 +9,10 @@ import {mwsupertest} from "./lib/middleware-supertest";
 
 const TITLE = __filename.split("/").pop();
 
-const silentHandler = () => responseHandler((err, req, res) => res.status(500).end());
+const silentHandler = () => responseHandler((err, req, res) => {
+    // use .send("") instead of .end(), since Node.js v13
+    res.status(500).send("");
+});
 
 describe(TITLE, () => {
 

@@ -118,7 +118,7 @@ function wrapRequest(req: supertest.Request): supertest.Test {
     const _req = req as unknown as { assert: (resError: any, res: any, fn: any) => void };
     const _assert = _req.assert;
     _req.assert = function (resError, res, fn) {
-        let err: string = res.header["x-mwsupertest"];
+        let err: string = res?.header["x-mwsupertest"];
         if (err) {
             err = Buffer.from(err, "base64").toString();
             resError = new Error(err);
