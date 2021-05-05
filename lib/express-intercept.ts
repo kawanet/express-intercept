@@ -19,7 +19,9 @@ export function responseHandler(errorHandler?: ErrorRequestHandler) {
 
 const defaultErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
     console.error(err);
-    res.status(500).set({"Content-Length": "0"}).end();
+
+    // use .send("") instead of .end(), since Node.js v13
+    res.status(500).send("");
 };
 
 class RequestHandlerBuilder {

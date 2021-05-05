@@ -107,16 +107,17 @@ It works at response returning phase after `res.send()` fired.
 It returns a RequestHandler which connects multiple RequestHandlers.
 Use this after `requestHandler()` method but not after `responseHandler()`.
 
-### `compressResponse()`
+#### `compressResponse()`
 
 It returns a RequestHandler to compress the response content.
 
-### `decompressResponse()`
+#### `decompressResponse()`
 
 It returns a RequestHandler to decompress the response content.
 
 ## SEE ALSO
 
+- https://github.com/kawanet/async-request-handler
 - https://github.com/kawanet/express-compress
 - https://github.com/kawanet/express-intercept
 - https://github.com/kawanet/express-sed
@@ -128,7 +129,7 @@ It returns a RequestHandler to decompress the response content.
 
 The MIT License (MIT)
 
-Copyright (c) 2020 Yusuke Kawasaki
+Copyright (c) 2020-2021 Yusuke Kawasaki
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

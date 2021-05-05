@@ -3,7 +3,7 @@
 import {strict as assert} from "assert";
 import * as express from "express";
 
-import {requestHandler, responseHandler} from "../lib/express-intercept";
+import {requestHandler, responseHandler} from "../";
 import {mwsupertest} from "./lib/middleware-supertest";
 
 const TITLE = __filename.split("/").pop();
