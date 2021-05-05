@@ -33,9 +33,9 @@ export class MWSuperTest {
      * defines a test function to test the response body as a `string` on server-side.
      */
 
-    getString(test: (str: string) => (any | Promise<any>)): this {
+    getString(checker: (str: string) => (any | Promise<any>)): this {
         return this.use(responseHandler().getString((str, req, res) => {
-            return Promise.resolve(str).then(test).catch(err => catchError(err, req, res));
+            return Promise.resolve(str).then(checker).catch(err => catchError(err, req, res));
         }));
     }
 
@@ -43,9 +43,9 @@ export class MWSuperTest {
      * defines a test function to test the response body as a `Buffer` on server-side.
      */
 
-    getBuffer(test: (buf: Buffer) => (any | Promise<any>)): this {
+    getBuffer(checker: (buf: Buffer) => (any | Promise<any>)): this {
         return this.use(responseHandler().getBuffer((buf, req, res) => {
-            return Promise.resolve(buf).then(test).catch(err => catchError(err, req, res));
+            return Promise.resolve(buf).then(checker).catch(err => catchError(err, req, res));
         }));
     }
 
@@ -53,9 +53,9 @@ export class MWSuperTest {
      * defines a test function to test the response object aka `res` on server-side.
      */
 
-    getRequest(test: (req: Request) => (any | Promise<any>)): this {
+    getRequest(checker: (req: Request) => (any | Promise<any>)): this {
         return this.use(responseHandler().getBuffer((buf, req, res) => {
-            return Promise.resolve().then(() => test(req)).catch(err => catchError(err, req, res));
+            return Promise.resolve().then(() => checker(req)).catch(err => catchError(err, req, res));
         }));
     }
 
@@ -63,9 +63,9 @@ export class MWSuperTest {
      * defines a test function to test the request object aka `req` on server-side.
      */
 
-    getResponse(test: (res: Response) => (any | Promise<any>)): this {
+    getResponse(checker: (res: Response) => (any | Promise<any>)): this {
         return this.use(responseHandler().getBuffer((buf, req, res) => {
-            return Promise.resolve().then(() => test(res)).catch(err => catchError(err, req, res));
+            return Promise.resolve().then(() => checker(res)).catch(err => catchError(err, req, res));
         }));
     }
 
@@ -118,7 +118,7 @@ function wrapRequest(req: supertest.Request): supertest.Test {
     const _req = req as unknown as { assert: (resError: any, res: any, fn: any) => void };
     const _assert = _req.assert;
     _req.assert = function (resError, res, fn) {
-        let err: string = res?.header["x-mwsupertest"];
+        let err: string = res.header["x-mwsupertest"];
         if (err) {
             err = Buffer.from(err, "base64").toString();
             resError = new Error(err);

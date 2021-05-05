@@ -3,7 +3,7 @@
 import {strict as assert} from "assert";
 import * as express from "express";
 
-import {responseHandler} from "../lib/express-intercept";
+import {responseHandler} from "../";
 import {mwsupertest} from "./lib/middleware-supertest";
 import {Transform} from "stream";
 import {RequestHandler} from "express";
