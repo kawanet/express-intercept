@@ -117,6 +117,7 @@ It returns a RequestHandler to decompress the response content.
 
 ## SEE ALSO
 
+- https://github.com/kawanet/async-request-handler
 - https://github.com/kawanet/express-compress
 - https://github.com/kawanet/express-intercept
 - https://github.com/kawanet/express-sed
@@ -128,7 +129,7 @@ It returns a RequestHandler to decompress the response content.
 
 The MIT License (MIT)
 
-Copyright (c) 2020 Yusuke Kawasaki
+Copyright (c) 2020-2021 Yusuke Kawasaki
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
