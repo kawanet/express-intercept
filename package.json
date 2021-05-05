@@ -1,7 +1,7 @@
 {
   "name": "express-intercept",
   "description": "Build Express middleware to intercept / replace / inspect / transform response",
-  "version": "0.8.8",
+  "version": "0.8.9",
   "author": "Yusuke Kawasaki <u-suke@kawa.net>",
   "contributors": [
     "Yusuke Kawasaki <u-suke@kawa.net>"
@@ -42,7 +42,7 @@
     "url": "git+https://github.com/kawanet/express-intercept.git"
   },
   "scripts": {
-    "build": "./node_modules/.bin/tsc -p .",
+    "build": "./node_modules/.bin/tsc -p . && ./node_modules/.bin/tsc types/*.d.ts",
     "fetch-mwsupertest": "curl -s https://raw.githubusercontent.com/kawanet/middleware-supertest/master/lib/middleware-supertest.ts | sed 's#express-intercept#../../lib/express-intercept#' > test/lib/middleware-supertest.ts && npm run build",
     "fixpack": "fixpack",
     "mocha": "./node_modules/.bin/mocha -R spec test/*.js",

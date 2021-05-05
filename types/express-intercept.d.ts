@@ -7,7 +7,7 @@ export declare function requestHandler(errorHandler?: ErrorRequestHandler): Requ
 
 export declare function responseHandler(errorHandler?: ErrorRequestHandler): ResponseHandlerBuilder;
 
-class RequestHandlerBuilder {
+export declare class RequestHandlerBuilder {
     constructor(errorHandler?: ErrorRequestHandler);
 
     /**
@@ -30,7 +30,7 @@ class RequestHandlerBuilder {
     getRequest(receiver: (req: Request) => (any | Promise<any>)): RequestHandler;
 }
 
-class ResponseHandlerBuilder extends RequestHandlerBuilder {
+export declare class ResponseHandlerBuilder extends RequestHandlerBuilder {
     /**
      * It appends a test condition to perform the RequestHandler.
      * Call this for multiple times to add multiple tests in AND condition.
