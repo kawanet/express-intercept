@@ -1,7 +1,7 @@
 // middleware-supertest.ts
 
 import * as express from "express";
-import {Request, RequestHandler, Response} from "express";
+import type {Request, RequestHandler, Response} from "express";
 import {responseHandler} from "../../lib/express-intercept";
 import * as supertest from "supertest";
 
