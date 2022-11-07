@@ -1,8 +1,8 @@
 // _handler.ts
 
-import {ErrorRequestHandler, Request, RequestHandler, Response} from "express";
+import type {ErrorRequestHandler, Request, RequestHandler, Response} from "express";
 import {ResponsePayload} from "./_payload";
-import {Writable} from "stream";
+import type {Writable} from "stream";
 
 type CallbackFn = (err?: Error) => void;
 

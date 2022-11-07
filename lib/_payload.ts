@@ -1,7 +1,7 @@
 // _payload.ts
 
 import {Writable} from "stream";
-import {Response} from "express";
+import type {Response} from "express";
 import {compressBuffer, decompressBuffer, findEncoding} from "./_compression";
 
 type CallbackFn = (err?: Error) => void;

@@ -1,15 +1,13 @@
 /// <reference types="node" />
 
-import {ErrorRequestHandler, Request, RequestHandler, Response} from "express";
-import {Readable} from "stream";
+import type {ErrorRequestHandler, Request, RequestHandler, Response} from "express";
+import type {Readable} from "stream";
 
-export declare function requestHandler(errorHandler?: ErrorRequestHandler): RequestHandlerBuilder;
+export declare const requestHandler: (errorHandler?: ErrorRequestHandler) => RequestHandlerBuilder;
 
-export declare function responseHandler(errorHandler?: ErrorRequestHandler): ResponseHandlerBuilder;
+export declare const responseHandler: (errorHandler?: ErrorRequestHandler) => ResponseHandlerBuilder;
 
-export declare class RequestHandlerBuilder {
-    constructor(errorHandler?: ErrorRequestHandler);
-
+declare interface RequestHandlerBuilder {
     /**
      * It appends a test condition to perform the RequestHandler.
      * Call this for multiple times to add multiple tests in AND condition.
@@ -30,7 +28,7 @@ export declare class RequestHandlerBuilder {
     getRequest(receiver: (req: Request) => (any | Promise<any>)): RequestHandler;
 }
 
-export declare class ResponseHandlerBuilder extends RequestHandlerBuilder {
+declare interface ResponseHandlerBuilder extends RequestHandlerBuilder {
     /**
      * It appends a test condition to perform the RequestHandler.
      * Call this for multiple times to add multiple tests in AND condition.

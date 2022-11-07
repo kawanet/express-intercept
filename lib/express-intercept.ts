@@ -1,19 +1,20 @@
 // express-intercept.ts
 
-import {ErrorRequestHandler, Request, RequestHandler, Response} from "express";
+import type {ErrorRequestHandler, Request, RequestHandler, Response} from "express";
 import {Readable} from "stream";
 import {ResponsePayload} from "./_payload";
 import {buildResponseHandler} from "./_handler";
 import {findEncoding} from "./_compression";
 import {IF, ASYNC, CATCH} from "async-request-handler";
+import type * as types from "../types/express-intercept";
 
 type CondFn<T> = (arg: T) => (boolean | Promise<boolean>);
 
-export function requestHandler(errorHandler?: ErrorRequestHandler) {
+export const requestHandler: typeof types.requestHandler = errorHandler => {
     return new RequestHandlerBuilder(errorHandler || defaultErrorHandler);
 }
 
-export function responseHandler(errorHandler?: ErrorRequestHandler) {
+export const responseHandler: typeof types.responseHandler = errorHandler => {
     return new ResponseHandlerBuilder(errorHandler || defaultErrorHandler);
 }
 
@@ -24,7 +25,7 @@ const defaultErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
     res.status(500).send("");
 };
 
-class RequestHandlerBuilder {
+class RequestHandlerBuilder implements types.RequestHandlerBuilder {
     constructor(errorHandler?: ErrorRequestHandler) {
         this._error = errorHandler;
     }
@@ -78,7 +79,7 @@ class RequestHandlerBuilder {
     }
 }
 
-class ResponseHandlerBuilder extends RequestHandlerBuilder {
+class ResponseHandlerBuilder extends RequestHandlerBuilder implements types.ResponseHandlerBuilder {
     use: never;
 
     /**
