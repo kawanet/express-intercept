@@ -4,14 +4,15 @@ import * as express from "express";
 import type {Request, RequestHandler, Response} from "express";
 import {responseHandler} from "../../lib/express-intercept";
 import * as supertest from "supertest";
+import type * as types from "./middleware-supertest.d";
 
-export const mwsupertest = (app: RequestHandler) => new MWSuperTest(app);
+export const mwsupertest: typeof types.mwsupertest = app => new MWSuperTest(app);
 
 /**
  * Testing Express.js RequestHandler middlewares both on server-side and client-side
  */
 
-export class MWSuperTest {
+class MWSuperTest implements types.MWSuperTest {
     private _agent: supertest.SuperTest<any>;
     private handlers = express.Router();
 

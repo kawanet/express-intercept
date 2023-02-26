@@ -43,7 +43,7 @@
   },
   "scripts": {
     "build": "./node_modules/.bin/tsc -p . && ./node_modules/.bin/tsc types/*.d.ts",
-    "fetch-mwsupertest": "curl -s https://raw.githubusercontent.com/kawanet/middleware-supertest/master/lib/middleware-supertest.ts | sed 's#express-intercept#../../lib/express-intercept#' > test/lib/middleware-supertest.ts && npm run build",
+    "fetch-mwsupertest": "make -C test/lib && npm run build",
     "fixpack": "fixpack",
     "mocha": "./node_modules/.bin/mocha -R spec test/*.js",
     "prepack": "npm run build && npm test",

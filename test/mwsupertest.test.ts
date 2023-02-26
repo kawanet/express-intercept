@@ -3,7 +3,7 @@
 import {strict as assert} from "assert";
 import * as express from "express";
 import {RequestHandler} from "express";
-import {MWSuperTest, mwsupertest} from "./lib/middleware-supertest";
+import {mwsupertest} from "./lib/middleware-supertest";
 
 const TITLE = __filename.split("/").pop();
 
@@ -24,7 +24,7 @@ describe(TITLE, () => {
     test("getResponse", mwsupertest(app).getResponse(thrower));
     test("getRequest", mwsupertest(app).getRequest(thrower));
 
-    function test(title: string, testApp: MWSuperTest) {
+    function test(title: string, testApp: ReturnType<typeof mwsupertest>) {
         it(title, async () => {
             let error: Error;
             try {
