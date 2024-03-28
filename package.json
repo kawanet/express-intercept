@@ -14,7 +14,7 @@
     "@types/mocha": "10.0.1",
     "@types/node": "18.14.1",
     "@types/supertest": "2.0.12",
-    "express": "4.18.2",
+    "express": "4.19.2",
     "mocha": "10.2.0",
     "rollup": "^3.17.3",
     "supertest": "6.3.3",
