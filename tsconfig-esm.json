@@ -1,19 +1,20 @@
 {
   "include": [
-    "./lib"
+    "./lib",
+    "./test"
   ],
   "compilerOptions": {
-    "module": "ES2020",
-    "moduleResolution": "Node16",
+    "module": "ES2022",
+    "moduleResolution": "Bundler",
     "noImplicitAny": true,
     "noImplicitReturns": true,
     "noImplicitThis": true,
     "noUnusedLocals": true,
     "noUnusedParameters": false,
-    "outDir": "build/esm/",
+    "outDir": "build/",
     "removeComments": false,
     "skipLibCheck": true,
     "strictNullChecks": false,
-    "target": "ES2020"
+    "target": "ES2022"
   }
 }
