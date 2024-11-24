@@ -1,14 +1,12 @@
 #!/usr/bin/env mocha -R spec
 
 import {strict as assert} from "assert";
-import * as express from "express";
+import express from "express";
 
 import {responseHandler} from "../";
-import {mwsupertest} from "./lib/middleware-supertest";
+import {mwsupertest} from "./lib/middleware-supertest.js";
 
-const TITLE = __filename.split("/").pop();
-
-describe(TITLE, () => {
+describe("replace-buffer.test.ts", () => {
     const empty = Buffer.of();
     const source = Buffer.from("ABCD");
     const expected = Buffer.from("XYZ");

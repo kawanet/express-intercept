@@ -1,15 +1,13 @@
 #!/usr/bin/env mocha -R spec
 
 import {strict as assert} from "assert";
-import * as express from "express";
+import express from "express";
 import * as zlib from "zlib";
 
 import {requestHandler, responseHandler} from "../";
-import {mwsupertest} from "./lib/middleware-supertest";
+import {mwsupertest} from "./lib/middleware-supertest.js";
 
-const TITLE = __filename.split("/").pop();
-
-describe(TITLE, () => {
+describe("compression.test.ts", () => {
     test("gzip", zlib.gzipSync);
     test("deflate", zlib.deflateSync);
     test("br", zlib.brotliCompressSync);

@@ -2,11 +2,11 @@
 
 import type {ErrorRequestHandler, Request, RequestHandler, Response} from "express";
 import {Readable} from "stream";
-import {ResponsePayload} from "./_payload";
-import {buildResponseHandler} from "./_handler";
-import {findEncoding} from "./_compression";
+import {ResponsePayload} from "./_payload.js";
+import {buildResponseHandler} from "./_handler.js";
+import {findEncoding} from "./_compression.js";
 import {IF, ASYNC, CATCH} from "async-request-handler";
-import type * as types from "../types/express-intercept";
+import type * as types from "../";
 
 type CondFn<T> = (arg: T) => (boolean | Promise<boolean>);
 

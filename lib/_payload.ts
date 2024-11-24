@@ -2,7 +2,7 @@
 
 import {Writable} from "stream";
 import type {Response} from "express";
-import {compressBuffer, decompressBuffer, findEncoding} from "./_compression";
+import {compressBuffer, decompressBuffer, findEncoding} from "./_compression.js";
 
 type CallbackFn = (err?: Error) => void;
 type ChunkItem = [string | Buffer, any?, any?];
