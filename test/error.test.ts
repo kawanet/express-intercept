@@ -1,20 +1,18 @@
 #!/usr/bin/env mocha -R spec
 
 import {strict as assert} from "assert";
-import * as express from "express";
+import express from "express";
 import {RequestHandler} from "express";
 
 import {responseHandler} from "../";
-import {mwsupertest} from "./lib/middleware-supertest";
-
-const TITLE = __filename.split("/").pop();
+import {mwsupertest} from "./lib/middleware-supertest.js";
 
 const silentHandler = () => responseHandler((err, req, res) => {
     // use .send("") instead of .end(), since Node.js v13
     res.status(500).send("");
 });
 
-describe(TITLE, () => {
+describe("error.test.ts", () => {
 
     const success: RequestHandler = (req, res) => res.send("SUCCESS");
 

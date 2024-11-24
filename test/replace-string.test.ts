@@ -1,14 +1,12 @@
 #!/usr/bin/env mocha -R spec
 
 import {strict as assert} from "assert";
-import * as express from "express";
+import express from "express";
 
 import {responseHandler} from "../";
-import {mwsupertest} from "./lib/middleware-supertest";
+import {mwsupertest} from "./lib/middleware-supertest.js";
 
-const TITLE = __filename.split("/").pop();
-
-describe(TITLE, () => {
+describe("replace-string.test.ts", () => {
     const empty = "";
     const source = "Hello, {{name}}!";
     const expected = "Hello, John!";

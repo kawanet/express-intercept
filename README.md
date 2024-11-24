@@ -8,8 +8,9 @@ Build Express middleware to intercept / replace / inspect / transform response
 ## SYNOPSIS
 
 ```js
-const express = require("express");
-const {requestHandler, responseHandler} = require("express-intercept");
+import express from "express";
+import {requestHandler, responseHandler} from "express-intercept";
+
 const app = express();
 
 // replace response string if response Content-Type is html.
@@ -129,7 +130,7 @@ It returns a RequestHandler to decompress the response content.
 
 The MIT License (MIT)
 
-Copyright (c) 2020-2023 Yusuke Kawasaki
+Copyright (c) 2020-2024 Yusuke Kawasaki
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

@@ -1,14 +1,12 @@
 #!/usr/bin/env mocha -R spec
 
-import * as express from "express";
+import express from "express";
 
 import {responseHandler} from "../";
-import {mwsupertest} from "./lib/middleware-supertest";
-import {stackRequestHeader} from "./lib/stack-request-header";
+import {mwsupertest} from "./lib/middleware-supertest.js";
+import {stackRequestHeader} from "./lib/stack-request-header.js";
 
-const TITLE = __filename.split("/").pop();
-
-describe(TITLE, () => {
+describe("stack-header.test.ts", () => {
     const addResponseHeader = (key: string) => responseHandler().interceptStream((upstream, req, res) => {
         res.setHeader(key, (req.header("x-foo") || "---") + "/" + (req.header("x-bar") || "---"));
         return upstream;

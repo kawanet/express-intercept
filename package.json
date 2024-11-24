@@ -1,24 +1,24 @@
 {
   "name": "express-intercept",
   "description": "Build Express middleware to intercept / replace / inspect / transform response",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "author": "Yusuke Kawasaki <u-suke@kawa.net>",
   "contributors": [
     "Yusuke Kawasaki <u-suke@kawa.net>"
   ],
   "dependencies": {
-    "async-request-handler": "^0.9.0"
+    "async-request-handler": "^1.0.0"
   },
   "devDependencies": {
-    "@types/express": "4.17.17",
-    "@types/mocha": "10.0.1",
-    "@types/node": "18.14.1",
-    "@types/supertest": "2.0.12",
-    "express": "4.18.2",
-    "mocha": "10.2.0",
-    "rollup": "^3.17.3",
-    "supertest": "6.3.3",
-    "typescript": "4.9.5"
+    "@types/express": "^4.17.17",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^22.9.3",
+    "@types/supertest": "^6.0.2",
+    "express": "^4.21.1",
+    "mocha": "^10.8.2",
+    "rollup": "^4.27.4",
+    "supertest": "^7.0.0",
+    "typescript": "^5.7.2"
   },
   "exports": {
     "import": "./esm/express-intercept.mjs",
