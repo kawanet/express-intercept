@@ -8,8 +8,9 @@ Build Express middleware to intercept / replace / inspect / transform response
 ## SYNOPSIS
 
 ```js
-const express = require("express");
-const {requestHandler, responseHandler} = require("express-intercept");
+import express from "express";
+import {requestHandler, responseHandler} from "express-intercept";
+
 const app = express();
 
 // replace response string if response Content-Type is html.
