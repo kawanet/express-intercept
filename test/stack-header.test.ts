@@ -1,10 +1,9 @@
-#!/usr/bin/env mocha -R spec
-
+import {describe, it} from "node:test";
 import express from "express";
 
-import {responseHandler} from "../";
-import {mwsupertest} from "./lib/middleware-supertest.js";
-import {stackRequestHeader} from "./lib/stack-request-header.js";
+import {responseHandler} from "../lib/express-intercept.ts";
+import {mwsupertest} from "middleware-supertest";
+import {stackRequestHeader} from "./lib/stack-request-header.ts";
 
 describe("stack-header.test.ts", () => {
     const addResponseHeader = (key: string) => responseHandler().interceptStream((upstream, req, res) => {

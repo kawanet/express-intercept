@@ -1,12 +1,11 @@
-#!/usr/bin/env mocha -R spec
-
-import {strict as assert} from "assert";
+import {strict as assert} from "node:assert";
+import {describe, it} from "node:test";
 import express from "express";
 
-import {responseHandler} from "../";
-import {mwsupertest} from "./lib/middleware-supertest.js";
-import {Transform} from "stream";
-import {RequestHandler} from "express";
+import {responseHandler} from "../lib/express-intercept.ts";
+import {mwsupertest} from "middleware-supertest";
+import {Transform} from "node:stream";
+import type {RequestHandler} from "express";
 
 describe("transform-stream.test.ts", () => {
     const source = "Hello, world!";

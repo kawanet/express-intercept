@@ -1,8 +1,11 @@
 {
   "name": "express-intercept",
   "description": "Build Express middleware to intercept / replace / inspect / transform response",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "author": "Yusuke Kawasaki <u-suke@kawa.net>",
+  "bugs": {
+    "url": "https://github.com/kawanet/express-intercept/issues"
+  },
   "contributors": [
     "Yusuke Kawasaki <u-suke@kawa.net>"
   ],
@@ -10,26 +13,36 @@
     "async-request-handler": "^1.0.0"
   },
   "devDependencies": {
+    "@rollup/plugin-node-resolve": "^16.0.2",
+    "@rollup/plugin-sucrase": "^5.0.2",
     "@types/express": "^4.17.17",
-    "@types/mocha": "^10.0.10",
-    "@types/node": "^22.9.3",
+    "@types/node": "^24.0.0",
     "@types/supertest": "^6.0.2",
     "express": "^4.21.1",
-    "mocha": "^10.8.2",
-    "rollup": "^4.27.4",
+    "middleware-supertest": "^1.0.0",
+    "rollup": "^4.52.4",
     "supertest": "^7.0.0",
-    "typescript": "^5.7.2"
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=22"
   },
   "exports": {
-    "import": "./esm/express-intercept.mjs",
-    "require": "./lib/express-intercept.js",
-    "types": "./types/express-intercept.d.ts"
+    ".": {
+      "require": "./dist/express-intercept.cjs",
+      "import": {
+        "types": "./types/express-intercept.d.ts",
+        "default": "./dist/express-intercept.mjs"
+      }
+    }
   },
   "files": [
     "LICENSE",
     "README.md",
-    "esm/*.mjs",
-    "lib/*.js",
+    "dist/express-intercept.cjs",
+    "dist/express-intercept.mjs",
+    "dist/package.json",
+    "lib/*.ts",
     "types/*.d.ts"
   ],
   "homepage": "https://github.com/kawanet/express-intercept#readme",
@@ -43,18 +56,19 @@
     "tamper"
   ],
   "license": "MIT",
-  "main": "./lib/express-intercept.js",
+  "main": "./dist/express-intercept.cjs",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/kawanet/express-intercept.git"
   },
   "scripts": {
-    "build": "make",
-    "fetch-mwsupertest": "make -C test/lib && npm run build",
+    "build": "make -C builder",
     "fixpack": "fixpack",
-    "prepack": "make clean all test",
-    "test": "make all test"
+    "prepack": "make -C builder test",
+    "prepare": "make -C builder clean all",
+    "test": "make -C builder test"
   },
-  "type": "commonjs",
-  "types": "./types/express-intercept.d.ts"
+  "sideEffects": false,
+  "type": "module",
+  "types": "types/express-intercept.d.ts"
 }

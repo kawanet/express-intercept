@@ -1,9 +1,8 @@
-#!/usr/bin/env mocha -R spec
-
-import {strict as assert} from "assert";
+import {strict as assert} from "node:assert";
+import {describe, it} from "node:test";
 import express from "express";
-import {RequestHandler} from "express";
-import {mwsupertest} from "./lib/middleware-supertest.js";
+import type {RequestHandler} from "express";
+import {mwsupertest} from "middleware-supertest";
 
 /**
  * This is a test to test mwsupertest itself.

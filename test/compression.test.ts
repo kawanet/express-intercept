@@ -1,11 +1,10 @@
-#!/usr/bin/env mocha -R spec
-
-import {strict as assert} from "assert";
+import {strict as assert} from "node:assert";
+import {describe, it} from "node:test";
 import express from "express";
-import * as zlib from "zlib";
+import * as zlib from "node:zlib";
 
-import {requestHandler, responseHandler} from "../";
-import {mwsupertest} from "./lib/middleware-supertest.js";
+import {requestHandler, responseHandler} from "../lib/express-intercept.ts";
+import {mwsupertest} from "middleware-supertest";
 
 describe("compression.test.ts", () => {
     test("gzip", zlib.gzipSync);

@@ -1,10 +1,9 @@
-#!/usr/bin/env mocha -R spec
-
-import {strict as assert} from "assert";
+import {strict as assert} from "node:assert";
+import {describe, it} from "node:test";
 import express from "express";
 
-import {responseHandler} from "../";
-import {mwsupertest} from "./lib/middleware-supertest.js";
+import {responseHandler} from "../lib/express-intercept.ts";
+import {mwsupertest} from "middleware-supertest";
 
 describe("replace-buffer.test.ts", () => {
     const empty = Buffer.of();

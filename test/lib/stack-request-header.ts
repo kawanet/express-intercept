@@ -1,7 +1,7 @@
 // stack-request-header.ts
 
-import {Request, RequestHandler} from "express";
-import {requestHandler, responseHandler} from "../../lib/express-intercept.js";
+import type {Request, RequestHandler} from "express";
+import {requestHandler, responseHandler} from "../../lib/express-intercept.ts";
 
 type Headers = { [key: string]: string }; // http.IncomingHttpHeaders
 
