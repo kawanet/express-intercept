@@ -1,17 +1,27 @@
 {
   "include": [
-    "./lib",
-    "./test"
+    "builder/",
+    "lib/",
+    "test/",
+    "types/"
+  ],
+  "exclude": [
+    "node_modules/"
   ],
   "compilerOptions": {
-    "module": "Node16",
-    "moduleResolution": "Node16",
+    "allowImportingTsExtensions": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true,
     "noImplicitAny": true,
     "noImplicitReturns": true,
     "noImplicitThis": true,
     "noUnusedLocals": true,
     "noUnusedParameters": false,
     "removeComments": false,
+    "resolveJsonModule": true,
     "skipLibCheck": true,
     "strictNullChecks": false,
     "target": "ES2022"

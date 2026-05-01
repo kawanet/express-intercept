@@ -1,12 +1,12 @@
 // express-intercept.ts
 
 import type {ErrorRequestHandler, Request, RequestHandler, Response} from "express";
-import {Readable} from "stream";
-import {ResponsePayload} from "./_payload.js";
-import {buildResponseHandler} from "./_handler.js";
-import {findEncoding} from "./_compression.js";
+import {Readable} from "node:stream";
+import {ResponsePayload} from "./_payload.ts";
+import {buildResponseHandler} from "./_handler.ts";
+import {findEncoding} from "./_compression.ts";
 import {IF, ASYNC, CATCH} from "async-request-handler";
-import type * as types from "../";
+import type * as types from "../types/express-intercept.d.ts";
 
 type CondFn<T> = (arg: T) => (boolean | Promise<boolean>);
 

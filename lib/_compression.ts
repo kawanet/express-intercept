@@ -1,6 +1,6 @@
 // _compression.ts
 
-import * as zlib from "zlib";
+import * as zlib from "node:zlib";
 
 interface Encodings<T> {
     br: T,

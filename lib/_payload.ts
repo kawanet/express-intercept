@@ -1,8 +1,8 @@
 // _payload.ts
 
-import {Writable} from "stream";
+import {Writable} from "node:stream";
 import type {Response} from "express";
-import {compressBuffer, decompressBuffer, findEncoding} from "./_compression.js";
+import {compressBuffer, decompressBuffer, findEncoding} from "./_compression.ts";
 
 type CallbackFn = (err?: Error) => void;
 type ChunkItem = [string | Buffer, any?, any?];
@@ -48,9 +48,10 @@ function send(queue: ChunkItem[], dest: Writable, cb?: CallbackFn) {
 
 export class ResponsePayload {
     queue: ChunkItem[] = [];
+    private readonly res: Response;
 
-    constructor(private res: Response) {
-        //
+    constructor(res: Response) {
+        this.res = res;
     }
 
     push(chunk: any, encoding?: string): void {

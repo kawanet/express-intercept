@@ -1,14 +1,13 @@
-#!/usr/bin/env mocha -R spec
-
+import {describe, it} from "node:test";
 import express from "express";
 
-import {responseHandler} from "../";
-import {mwsupertest} from "./lib/middleware-supertest.js";
+import {responseHandler} from "../lib/express-intercept.ts";
+import {mwsupertest} from "middleware-supertest";
 
-const enum ETag {
-    foo = `W/"3-C+7Hteo/D9vJXQ3UfzxbwnXaijM"`,
-    FOO = `W/"3-/qtA4fynfHNgzMoUgbuLpfkZzjo"`,
-}
+const ETag = {
+    foo: `W/"3-C+7Hteo/D9vJXQ3UfzxbwnXaijM"`,
+    FOO: `W/"3-/qtA4fynfHNgzMoUgbuLpfkZzjo"`,
+} as const;
 
 describe("not-modified.test.ts", () => {
     {

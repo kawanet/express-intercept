@@ -1,11 +1,10 @@
-#!/usr/bin/env mocha -R spec
-
-import {strict as assert} from "assert";
+import {strict as assert} from "node:assert";
+import {describe, it} from "node:test";
 import express from "express";
-import {Request, Response} from "express";
+import type {Request, Response} from "express";
 
-import {requestHandler, responseHandler} from "../";
-import {mwsupertest} from "./lib/middleware-supertest.js";
+import {requestHandler, responseHandler} from "../lib/express-intercept.ts";
+import {mwsupertest} from "middleware-supertest";
 
 describe("get-response.test.ts", () => {
     {

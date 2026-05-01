@@ -1,5 +1,3 @@
-*.js
-*.mjs
 *.tgz
 *~
 .DS_Store
@@ -8,7 +6,11 @@
 .idea/
 .vscode/
 build/
+dist/
+esm/
+lib/**/*.js
 node_modules/
 npm-debug.log*
 package-lock.json
+test/**/*.js
 ~$*
