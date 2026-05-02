@@ -19,6 +19,9 @@ MAX_BYTES := 15000
 # smoke checks below.
 NAMED_EXPORTS := requestHandler responseHandler
 
+# Named exports are passed to "node -e" and accessed via process.argv.slice(1).
+# This is safe and consistent across Node.js versions for simple string arguments.
+
 ALL := $(MJS_DST) $(CJS_DST) $(PKG_DST)
 
 # Smoke test: import/require the bundle and verify named exports.
