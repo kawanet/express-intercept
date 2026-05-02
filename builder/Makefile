@@ -21,6 +21,9 @@ NAMED_EXPORTS := requestHandler responseHandler
 
 ALL := $(MJS_DST) $(CJS_DST) $(PKG_DST)
 
+SMOKE_MJS := cd .. && node --input-type=module -e 'const m = await import("./dist/express-intercept.mjs"); for (const k of process.argv.slice(1)) { if (typeof m[k] !== "function") { console.error("missing MJS export:", k); process.exit(1); } console.log("MJS export OK:", k); }' $(NAMED_EXPORTS)
+SMOKE_CJS := cd .. && node --input-type=commonjs -e 'const m = require("./dist/express-intercept.cjs"); for (const k of process.argv.slice(1)) { if (typeof m[k] !== "function") { console.error("missing CJS export:", k); process.exit(1); } console.log("CJS export OK:", k); }' $(NAMED_EXPORTS)
+
 ####
 
 all: $(ALL)
@@ -35,7 +38,7 @@ $(MJS_DST): $(MJS_CONFIG) $(SRC) $(BUILDER_SRC)
 	@mkdir -p $(dir $@)
 	../node_modules/.bin/rollup -c $<
 	@test "$$(wc -c < $@)" -le $(MAX_BYTES) || { echo "ERROR: $@ exceeds $(MAX_BYTES) byte cap" >&2; exit 1; }
-	cd .. && node --input-type=module -e 'const m = await import("./dist/express-intercept.mjs"); for (const k of process.argv.slice(1)) { if (typeof m[k] !== "function") { console.error("missing MJS export:", k); process.exit(1); } console.log("MJS export OK:", k); }' $(NAMED_EXPORTS)
+	$(SMOKE_MJS)
 	@ls -l $@
 	@echo ""
 
@@ -43,7 +46,7 @@ $(CJS_DST): $(CJS_CONFIG) $(SRC) $(BUILDER_SRC)
 	@mkdir -p $(dir $@)
 	../node_modules/.bin/rollup -c $<
 	@test "$$(wc -c < $@)" -le $(MAX_BYTES) || { echo "ERROR: $@ exceeds $(MAX_BYTES) byte cap" >&2; exit 1; }
-	cd .. && node --input-type=commonjs -e 'const m = require("./dist/express-intercept.cjs"); for (const k of process.argv.slice(1)) { if (typeof m[k] !== "function") { console.error("missing CJS export:", k); process.exit(1); } console.log("CJS export OK:", k); }' $(NAMED_EXPORTS)
+	$(SMOKE_CJS)
 	@ls -l $@
 	@echo ""
 
@@ -54,7 +57,11 @@ test: all $(TYPES)
 	../node_modules/.bin/tsc --noEmit
 	cd .. && node --test test/*.test.ts
 
+smoke:
+	$(SMOKE_MJS)
+	$(SMOKE_CJS)
+
 clean:
 	/bin/rm -fr $(ALL)
 
-.PHONY: all clean test
+.PHONY: all clean test smoke

@@ -10,11 +10,22 @@ jobs:
         node-version: [ 20, 22, 24 ]
     steps:
       - uses: actions/checkout@v4
+
+      - name: Use Node.js 22 (for build)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - run: npm install
+      - run: npm run build
+
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-      - run: npm install
-      - run: npm run build
+
+      - if: matrix.node-version == '20'
+        run: make -C builder smoke
+
       - if: matrix.node-version != '20'
         run: npm test
