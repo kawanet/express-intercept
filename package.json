@@ -71,8 +71,7 @@
   "scripts": {
     "build": "make -C builder",
     "fixpack": "fixpack",
-    "prepack": "make -C builder test",
-    "prepare": "make -C builder clean all",
+    "prepack": "make -C builder clean all test",
     "test": "make -C builder test"
   },
   "sideEffects": false,
