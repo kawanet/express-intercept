@@ -24,6 +24,13 @@
     "supertest": "^7.0.0",
     "typescript": "^5.9.3"
   },
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": ">=22",
+      "onFail": "warn"
+    }
+  },
   "engines": {
     "node": ">=20"
   },
@@ -64,17 +71,11 @@
   "scripts": {
     "build": "make -C builder",
     "fixpack": "fixpack",
-    "prepare": "make -C builder clean all test",
+    "prepack": "if node -v | grep -q '^v20'; then echo 'ERROR: packing is not allowed on Node 20' >&2; exit 1; fi",
+    "prepare": "if node -v | grep -q '^v20'; then :; else make -C builder clean all test; fi",
     "test": "make -C builder test"
   },
   "sideEffects": false,
   "type": "module",
-  "types": "types/express-intercept.d.ts",
-  "devEngines": {
-    "runtime": {
-      "name": "node",
-      "version": ">=22",
-      "onFail": "warn"
-    }
-  }
+  "types": "types/express-intercept.d.ts"
 }
