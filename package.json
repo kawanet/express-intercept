@@ -1,7 +1,7 @@
 {
   "name": "express-intercept",
   "description": "Build Express middleware to intercept / replace / inspect / transform response",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "author": "Yusuke Kawasaki <u-suke@kawa.net>",
   "bugs": {
     "url": "https://github.com/kawanet/express-intercept/issues"
@@ -24,8 +24,15 @@
     "supertest": "^7.0.0",
     "typescript": "^5.9.3"
   },
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": ">=22",
+      "onFail": "warn"
+    }
+  },
   "engines": {
-    "node": ">=22"
+    "node": ">=20"
   },
   "exports": {
     ".": {
@@ -64,8 +71,8 @@
   "scripts": {
     "build": "make -C builder",
     "fixpack": "fixpack",
-    "prepack": "make -C builder test",
-    "prepare": "make -C builder clean all",
+    "prepack": "if node -v | grep -q '^v20'; then echo 'ERROR: packing is not allowed on Node 20'; exit 1; fi",
+    "prepare": "if node -v | grep -q '^v20'; then :; else make -C builder clean all test; fi",
     "test": "make -C builder test"
   },
   "sideEffects": false,
