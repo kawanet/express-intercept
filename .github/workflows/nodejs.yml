@@ -25,8 +25,5 @@ jobs:
         with:
           node-version: 20
 
-      - if: matrix.node-version == '20'
-        run: make -C builder smoke
-
-      - if: matrix.node-version != '20'
+      - name: Run Tests (Automated skip on Node 20)
         run: npm test
