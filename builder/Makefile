@@ -57,7 +57,7 @@ test: all $(TYPES)
 	../node_modules/.bin/tsc --noEmit
 	cd .. && node --test test/*.test.ts
 
-smoke:
+smoke: all
 	$(SMOKE_MJS)
 	$(SMOKE_CJS)
 
