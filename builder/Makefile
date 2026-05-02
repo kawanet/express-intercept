@@ -2,7 +2,6 @@ SRC   := $(wildcard ../lib/*.ts)
 TYPES := $(wildcard ../types/*.d.ts)
 BUILDER_SRC := $(wildcard ./*.ts)
 
-PKG_DST := ../dist/package.json
 MJS_DST := ../dist/express-intercept.mjs
 CJS_DST := ../dist/express-intercept.cjs
 
@@ -17,18 +16,12 @@ MAX_BYTES := 15000
 # Documentation-specified named exports that must be verified in the bundles.
 NAMED_EXPORTS := requestHandler responseHandler
 
-ALL := $(MJS_DST) $(CJS_DST) $(PKG_DST)
+ALL := $(MJS_DST) $(CJS_DST)
 
 ####
 
 # Build all artifacts.
 all: $(ALL)
-
-$(PKG_DST):
-	@mkdir -p $(dir $@)
-	echo '{"type":"commonjs"}' > $@
-	@ls -l $@
-	@echo ""
 
 $(MJS_DST): $(MJS_CONFIG) $(SRC) $(BUILDER_SRC)
 	@mkdir -p $(dir $@)
