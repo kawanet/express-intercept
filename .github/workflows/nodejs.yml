@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Use Node.js for build (Node 20 falls back to 22)
+      - name: Setup Node.js for build (Node 20 falls back to 22)
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version == '20' && '22' || matrix.node-version }}
@@ -23,7 +23,7 @@ jobs:
         if: matrix.node-version == '20'
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 20
 
       - if: matrix.node-version == '20'
         run: make -C builder smoke

@@ -24,10 +24,10 @@ NAMED_EXPORTS := requestHandler responseHandler
 
 ALL := $(MJS_DST) $(CJS_DST) $(PKG_DST)
 
+
 # Smoke test: import/require the bundle and verify named exports.
 # Note: process.argv.slice(1) is used because node -e 'code' arg1 arg2
 # results in process.argv = ['node', 'arg1', 'arg2'].
-
 SMOKE_MJS := cd .. && node --input-type=module -e 'const m = await import("./dist/express-intercept.mjs"); for (const k of process.argv.slice(1)) { if (typeof m[k] !== "function") { console.error("missing MJS export:", k); process.exit(1); } console.log("MJS export OK:", k); }' $(NAMED_EXPORTS)
 SMOKE_CJS := cd .. && node --input-type=commonjs -e 'const m = require("./dist/express-intercept.cjs"); for (const k of process.argv.slice(1)) { if (typeof m[k] !== "function") { console.error("missing CJS export:", k); process.exit(1); } console.log("CJS export OK:", k); }' $(NAMED_EXPORTS)
 
