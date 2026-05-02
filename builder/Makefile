@@ -56,14 +56,21 @@ smoke: all
 
 ####
 
-# Build, run smoke tests, type-check, and run the full node:test suite against the source.
-# Note: Full tests (tsc and node:test) require Node.js 22+.
-# 'smoke' already depends on 'all', but 'all' is listed here to keep the build chain explicit.
+# Build, run smoke tests, and conditionally run full tests (tsc and node:test).
+# 1. Skip on Node.js 20 (already EOL).
+# 2. Skip during 'npm install' (npm_command=install) to prevent redundant tests in CI and local dev.
+# Informative messages are shown when skipping.
 test: all smoke $(TYPES)
+	@node -v | grep -qv "^v20" || echo "Node 20 detected: skipping full tests."
+	@ [ "$$npm_command" != "install" ] || echo "npm install detected: skipping full tests."
+	@node -v | grep -q "^v20" || [ "$$npm_command" = "install" ] || $(MAKE) test-ts
+
+# Actual test commands requiring Node.js 22+.
+test-ts:
 	../node_modules/.bin/tsc --noEmit
 	cd .. && node --test test/*.test.ts
 
 clean:
 	/bin/rm -fr $(ALL)
 
-.PHONY: all clean test smoke
+.PHONY: all clean test smoke test-ts
