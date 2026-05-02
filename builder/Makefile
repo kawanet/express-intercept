@@ -56,11 +56,14 @@ $(CJS_DST): $(CJS_CONFIG) $(SRC) $(BUILDER_SRC)
 
 # Build, type-check, and run the node:test suite against the source.
 # Note: full tests (tsc and node:test) are skipped on Node 20.
-# All commands are on a single line to ensure the early return (exit 0) works correctly.
 test: all $(TYPES)
-	@ [ $(NODE_MAJOR) -le 20 ] && { echo "Node $(NODE_MAJOR) detected: skipping full tests."; exit 0; } || { ../node_modules/.bin/tsc --noEmit && cd .. && node --test test/*.test.ts; }
+	@test $(NODE_MAJOR) -ge 22 && $(MAKE) test-ts || echo "Node $(NODE_MAJOR) detected: skipping full tests."
+
+test-ts:
+	../node_modules/.bin/tsc --noEmit
+	cd .. && node --test test/*.test.ts
 
 clean:
 	/bin/rm -fr $(ALL)
 
-.PHONY: all clean test
+.PHONY: all clean test test-ts
