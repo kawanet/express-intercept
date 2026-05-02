@@ -9,7 +9,7 @@ CJS_DST := ../dist/express-intercept.cjs
 MJS_CONFIG := ./rollup-mjs.config.ts
 CJS_CONFIG := ./rollup-cjs.config.ts
 
-# The bundle is around 9 KB today (lib/ + one external dependency).
+# The bundle is around 9 KB today (lib/ + the one external dependency).
 # If it gets significantly larger, it might indicate an accidental inclusion
 # of a Node.js built-in or a transitive dependency.
 MAX_BYTES := 15000
@@ -44,14 +44,15 @@ $(CJS_DST): $(CJS_CONFIG) $(SRC) $(BUILDER_SRC)
 	@ls -l $@
 	@echo ""
 
-# Verify the bundles by importing/requiring them and checking named exports.
+# Verify the bundles by importing/requiring the package itself.
+# This ensures that the public entrypoints (exports/main) are correctly configured.
 # Note: process.argv.slice(1) is used because node -e 'code' arg1 arg2
 # results in process.argv = ['node', 'arg1', 'arg2'].
 smoke: all
-	@# MJS smoke test
-	cd .. && node --input-type=module -e 'const m = await import("./dist/express-intercept.mjs"); for (const k of process.argv.slice(1)) { if (typeof m[k] !== "function") { console.error("missing MJS export:", k); process.exit(1); } console.log("MJS export OK:", k); }' $(NAMED_EXPORTS)
-	@# CJS smoke test
-	cd .. && node --input-type=commonjs -e 'const m = require("./dist/express-intercept.cjs"); for (const k of process.argv.slice(1)) { if (typeof m[k] !== "function") { console.error("missing CJS export:", k); process.exit(1); } console.log("CJS export OK:", k); }' $(NAMED_EXPORTS)
+	@# MJS smoke test via public entrypoint
+	cd .. && node --input-type=module -e 'const m = await import("express-intercept"); for (const k of process.argv.slice(1)) { if (typeof m[k] !== "function") { console.error("missing MJS export:", k); process.exit(1); } console.log("MJS export OK:", k); }' $(NAMED_EXPORTS)
+	@# CJS smoke test via public entrypoint
+	cd .. && node --input-type=commonjs -e 'const m = require("express-intercept"); for (const k of process.argv.slice(1)) { if (typeof m[k] !== "function") { console.error("missing CJS export:", k); process.exit(1); } console.log("CJS export OK:", k); }' $(NAMED_EXPORTS)
 
 ####
 

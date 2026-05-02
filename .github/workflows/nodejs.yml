@@ -17,7 +17,10 @@ jobs:
           node-version: ${{ matrix.node-version }}
 
       - run: npm install
+
+      # Separate build and test steps to explicitly indicate the build process.
       - run: npm run build
+
       - run: npm test
 
       # Validate runtime compatibility with Node.js 20 (LTS/EOL)
@@ -29,4 +32,5 @@ jobs:
 
       - name: Run smoke tests on Node.js 20
         if: matrix.node-version == '22'
-        run: make -C builder smoke
+        # Run npm install to exercise a real Node 20 install path and verify dependency compatibility.
+        run: npm install && make -C builder smoke
