@@ -5,6 +5,11 @@ Build Express middleware to intercept / replace / inspect / transform response
 [![Node.js CI](https://github.com/kawanet/express-intercept/workflows/Node.js%20CI/badge.svg?branch=master)](https://github.com/kawanet/express-intercept/actions/)
 [![npm version](https://badge.fury.io/js/express-intercept.svg)](https://www.npmjs.com/package/express-intercept)
 
+## REQUIREMENTS
+
+- Runtime: Node 20+
+- Development: Node 22+
+
 ## SYNOPSIS
 
 ```js
