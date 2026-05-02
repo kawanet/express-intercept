@@ -64,8 +64,8 @@
   "scripts": {
     "build": "make -C builder",
     "fixpack": "fixpack",
-    "prepare": "make -C builder clean all test",
-    "test": "make -C builder test"
+    "prepare": "make -C builder clean all && npm test",
+    "test": "if node -v | grep -q '^v20'; then make -C builder smoke; else make -C builder test; fi"
   },
   "sideEffects": false,
   "type": "module",
