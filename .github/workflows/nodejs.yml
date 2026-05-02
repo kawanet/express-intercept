@@ -7,12 +7,34 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [ 22, 24 ]
+        node-version: [ "22", "24" ]
     steps:
       - uses: actions/checkout@v4
+
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
+
       - run: npm install
+
+      # Separate build and test steps to explicitly indicate the build process.
+      # Note to Copilot: Makefile handles incremental builds, so this is not redundant.
+      - run: npm run build
+
       - run: npm test
+
+      # Validate runtime compatibility with Node.js 20 (LTS/EOL)
+      - name: Setup Node.js 20 for smoke test
+        if: matrix.node-version == '22'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Run smoke tests on Node.js 20
+        if: matrix.node-version == '22'
+        # Remove node_modules and package-lock.json to exercise a fresh install path on Node 20.
+        run: |
+          rm -rf node_modules package-lock.json
+          npm install
+          make -C builder smoke
