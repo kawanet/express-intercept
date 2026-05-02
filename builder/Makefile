@@ -1,4 +1,5 @@
-SRC := $(wildcard ../lib/*.ts ../types/*.ts)
+SRC   := $(wildcard ../lib/*.ts)
+TYPES := $(wildcard ../types/*.d.ts)
 BUILDER_SRC := $(wildcard ./*.ts)
 
 PKG_DST := ../dist/package.json
@@ -8,20 +9,19 @@ CJS_DST := ../dist/express-intercept.cjs
 MJS_CONFIG := ./rollup-mjs.config.ts
 CJS_CONFIG := ./rollup-cjs.config.ts
 
-# Bundle is around 9 KB today (lib/ + the one external dep we keep).
-# Anything noticeably larger means an accidental bundling of a Node
-# built-in or a transitive dep — fail the build so it cannot slip in.
+# The bundle is around 9 KB today (lib/ + one external dependency).
+# If it gets significantly larger, it might indicate an accidental inclusion
+# of a Node.js built-in or a transitive dependency.
 MAX_BYTES := 15000
 
-# Every named export the package documents must survive the round trip
-# through both CJS and ESM bundles. List them once and assert in both
-# smoke checks below.
+# Documentation-specified named exports that must be verified in the bundles.
 NAMED_EXPORTS := requestHandler responseHandler
 
 ALL := $(MJS_DST) $(CJS_DST) $(PKG_DST)
 
 ####
 
+# Build all artifacts.
 all: $(ALL)
 
 $(PKG_DST):
@@ -44,17 +44,23 @@ $(CJS_DST): $(CJS_CONFIG) $(SRC) $(BUILDER_SRC)
 	@ls -l $@
 	@echo ""
 
+# Verify the bundles by importing/requiring the package itself.
+# This ensures that the public entrypoints (exports/main) are correctly configured.
+smoke: all
+	@# MJS smoke test via public entrypoint
+	cd .. && node --input-type=module -e 'const m = await import("express-intercept"); for (const k of process.argv.slice(1)) { if (typeof m[k] !== "function") { console.error("missing MJS export:", k); process.exit(1); } console.log("MJS export OK:", k); }' $(NAMED_EXPORTS)
+	@# CJS smoke test via public entrypoint
+	cd .. && node --input-type=commonjs -e 'const m = require("express-intercept"); for (const k of process.argv.slice(1)) { if (typeof m[k] !== "function") { console.error("missing CJS export:", k); process.exit(1); } console.log("CJS export OK:", k); }' $(NAMED_EXPORTS)
+
 ####
 
-# Build, type-check, smoke-check that both bundles expose every named
-# export, and run the node:test suite against the source.
-test: all
+# Build, run smoke tests, type-check, and run the full node:test suite against the source.
+# Note: Full tests (tsc and node:test) require Node.js 22+.
+test: all smoke $(TYPES)
 	../node_modules/.bin/tsc --noEmit
-	cd .. && node -e 'const m = require("./dist/express-intercept.cjs"); for (const k of "$(NAMED_EXPORTS)".split(" ")) if (typeof m[k] !== "function") { console.error("missing CJS export:", k); process.exit(1); } console.log("CJS smoke OK")'
-	cd .. && node --input-type=module -e 'const m = await import("./dist/express-intercept.mjs"); for (const k of "$(NAMED_EXPORTS)".split(" ")) if (typeof m[k] !== "function") { console.error("missing MJS export:", k); process.exit(1); } console.log("MJS smoke OK")'
 	cd .. && node --test test/*.test.ts
 
 clean:
 	/bin/rm -fr $(ALL)
 
-.PHONY: all clean test
+.PHONY: all clean test smoke
