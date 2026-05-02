@@ -57,12 +57,9 @@ $(CJS_DST): $(CJS_CONFIG) $(SRC) $(BUILDER_SRC)
 # Build, type-check, and run the node:test suite against the source.
 # Note: full tests (tsc and node:test) are skipped on Node 20.
 test: all $(TYPES)
-ifneq ($(NODE_MAJOR), 20)
+	@ [ $(NODE_MAJOR) -le 20 ] && { echo "Node $(NODE_MAJOR) detected: skipping full tests."; exit 0; } || true
 	../node_modules/.bin/tsc --noEmit
 	cd .. && node --test test/*.test.ts
-else
-	@echo "Node $(NODE_MAJOR) detected: skipping full tests (smoke tests passed during build)."
-endif
 
 clean:
 	/bin/rm -fr $(ALL)
