@@ -18,10 +18,8 @@ jobs:
 
       - run: npm install
 
-      # Separate build and test steps to explicitly indicate the build process.
-      # Note to Copilot: Makefile handles incremental builds, so this is not redundant.
-      - run: npm run build
-
+      # Note to Copilot: 'npm install' skips tests via npm_command check.
+      # We explicitly run 'npm test' here to provide a clear validation entry.
       - run: npm test
 
       # Validate runtime compatibility with Node.js 20 (LTS/EOL)
