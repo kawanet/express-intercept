@@ -15,26 +15,26 @@ export function runConditionTests(label: string, express: () => Express): void {
                     .replaceString((str: string) => str + "/"));
 
                 app.use(responseHandler()
-                    .if((res: any) => /A/.test(String(res.getHeader("x-path"))))
+                    .if((res) => /A/.test(String(res.getHeader("x-path"))))
                     .replaceString((str: string) => str + "A"));
 
                 app.use(responseHandler()
-                    .if((res: any) => /B/.test(String(res.getHeader("x-path"))))
-                    .if((res: any) => /C/.test(String(res.getHeader("x-path"))))
+                    .if((res) => /B/.test(String(res.getHeader("x-path"))))
+                    .if((res) => /C/.test(String(res.getHeader("x-path"))))
                     .replaceString((str: string) => str + "BC"));
 
                 app.use(responseHandler()
-                    .for((req: any) => /D/.test(req.path))
+                    .for((req) => /D/.test(req.path))
                     .replaceString((str: string) => str + "D"));
 
                 app.use(responseHandler()
-                    .for((req: any) => /E/.test(req.path))
-                    .for((req: any) => /F/.test(req.path))
+                    .for((req) => /E/.test(req.path))
+                    .for((req) => /F/.test(req.path))
                     .replaceString((str: string) => str + "EF"));
 
                 app.use(responseHandler()
-                    .for((req: any) => /G/.test(req.path))
-                    .if((res: any) => /H/.test(String(res.getHeader("x-path"))))
+                    .for((req) => /G/.test(req.path))
+                    .if((res) => /H/.test(String(res.getHeader("x-path"))))
                     .replaceString((str: string) => str + "GH"));
 
                 app.use(requestHandler().use((req, res) => {
@@ -58,26 +58,26 @@ export function runConditionTests(label: string, express: () => Express): void {
                     .replaceString(async (str: string) => str + "/"));
 
                 app.use(responseHandler()
-                    .if(async (res: any) => /A/.test(String(res.getHeader("x-path"))))
+                    .if(async (res) => /A/.test(String(res.getHeader("x-path"))))
                     .replaceString(async (str: string) => str + "A"));
 
                 app.use(responseHandler()
-                    .if(async (res: any) => /B/.test(String(res.getHeader("x-path"))))
-                    .if(async (res: any) => /C/.test(String(res.getHeader("x-path"))))
+                    .if(async (res) => /B/.test(String(res.getHeader("x-path"))))
+                    .if(async (res) => /C/.test(String(res.getHeader("x-path"))))
                     .replaceString(async (str: string) => str + "BC"));
 
                 app.use(responseHandler()
-                    .for(async (req: any) => /D/.test(req.path))
+                    .for(async (req) => /D/.test(req.path))
                     .replaceString(async (str: string) => str + "D"));
 
                 app.use(responseHandler()
-                    .for(async (req: any) => /E/.test(req.path))
-                    .for(async (req: any) => /F/.test(req.path))
+                    .for(async (req) => /E/.test(req.path))
+                    .for(async (req) => /F/.test(req.path))
                     .replaceString(async (str: string) => str + "EF"));
 
                 app.use(responseHandler()
-                    .for(async (req: any) => /G/.test(req.path))
-                    .if(async (res: any) => /H/.test(String(res.getHeader("x-path"))))
+                    .for(async (req) => /G/.test(req.path))
+                    .if(async (res) => /H/.test(String(res.getHeader("x-path"))))
                     .replaceString(async (str: string) => str + "GH"));
 
                 app.use(requestHandler().use(async (req, res) => {
