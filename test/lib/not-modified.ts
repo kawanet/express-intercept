@@ -1,23 +1,23 @@
 import {describe, it} from "node:test";
-import express from "express";
 
-import {responseHandler} from "../lib/express-intercept.ts";
+import {responseHandler} from "../../lib/express-intercept.ts";
 import {mwsupertest} from "middleware-supertest";
+import type {ExpressFactory} from "./util.ts";
 
 const ETag = {
     foo: `W/"3-C+7Hteo/D9vJXQ3UfzxbwnXaijM"`,
     FOO: `W/"3-/qtA4fynfHNgzMoUgbuLpfkZzjo"`,
 } as const;
 
-describe("not-modified.test.ts", () => {
-    {
+export function runNotModifiedTests(label: string, express: ExpressFactory): void {
+    describe(`${label}: not-modified`, () => {
         it("304 Not Modified", async () => {
             const app = express();
 
             app.use("/upper/304", responseHandler().getResponse(res => (res.statusCode = 304)));
             app.use("/lower/304", responseHandler().getResponse(res => (res.statusCode = 304)));
             app.use("/upper/", responseHandler().replaceString(str => str.toUpperCase()));
-            app.use("/", (req, res, next) => res.send("foo"));
+            app.use("/", (req: any, res: any) => res.send("foo"));
 
             await mwsupertest(app).get("/lower/")
                 .expect(200)
@@ -41,6 +41,5 @@ describe("not-modified.test.ts", () => {
                 .expect("")
                 .expect("etag", ETag.FOO);
         });
-    }
-});
-
+    });
+}
