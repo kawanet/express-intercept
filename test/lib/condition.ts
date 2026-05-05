@@ -1,11 +1,11 @@
 import {strict as assert} from "node:assert";
 import {describe, it} from "node:test";
-import type {Express} from "express";
 
 import {requestHandler, responseHandler} from "../../lib/express-intercept.ts";
 import {mwsupertest} from "middleware-supertest";
+import type {ExpressModule} from "./util.ts";
 
-export function runConditionTests(label: string, express: () => Express): void {
+export function runConditionTests(label: string, express: ExpressModule): void {
     describe(`${label}: condition`, () => {
         {
             it("if, for", async () => {

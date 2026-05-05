@@ -1,11 +1,11 @@
 import {strict as assert} from "node:assert";
 import {describe, it} from "node:test";
-import type {Express} from "express";
 
 import {responseHandler} from "../../lib/express-intercept.ts";
 import {mwsupertest} from "middleware-supertest";
+import type {ExpressModule} from "./util.ts";
 
-export function runReplaceStringTests(label: string, express: () => Express): void {
+export function runReplaceStringTests(label: string, express: ExpressModule): void {
     describe(`${label}: replace-string`, () => {
         const empty = "";
         const source = "Hello, {{name}}!";

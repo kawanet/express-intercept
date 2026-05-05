@@ -1,12 +1,12 @@
 import {strict as assert} from "node:assert";
 import {describe, it} from "node:test";
 import * as zlib from "node:zlib";
-import type {Express} from "express";
 
 import {requestHandler, responseHandler} from "../../lib/express-intercept.ts";
 import {mwsupertest} from "middleware-supertest";
+import type {ExpressModule} from "./util.ts";
 
-export function runCompressionTests(label: string, express: () => Express): void {
+export function runCompressionTests(label: string, express: ExpressModule): void {
     describe(`${label}: compression`, () => {
         runEncodingCase(label, express, "gzip", zlib.gzipSync);
         runEncodingCase(label, express, "deflate", zlib.deflateSync);
@@ -57,7 +57,7 @@ export function runCompressionTests(label: string, express: () => Express): void
     });
 }
 
-function runEncodingCase(_label: string, express: () => Express, encoding: string, _encoder: (buf: Buffer) => Buffer) {
+function runEncodingCase(_label: string, express: ExpressModule, encoding: string, _encoder: (buf: Buffer) => Buffer) {
     it(encoding, async () => {
         const content = `encoding=${encoding}`;
         const expected = `[encoding=${encoding}]`;
