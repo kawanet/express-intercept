@@ -1,7 +1,7 @@
 {
   "name": "express-intercept",
   "description": "Build Express middleware to intercept / replace / inspect / transform response",
-  "version": "1.2.3",
+  "version": "1.3.0",
   "author": "Yusuke Kawasaki <u-suke@kawa.net>",
   "bugs": {
     "url": "https://github.com/kawanet/express-intercept/issues"
