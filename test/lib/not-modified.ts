@@ -1,15 +1,15 @@
 import {describe, it} from "node:test";
-import type {Express} from "express";
 
 import {responseHandler} from "../../lib/express-intercept.ts";
 import {mwsupertest} from "middleware-supertest";
+import type {ExpressModule} from "./util.ts";
 
 const ETag = {
     foo: `W/"3-C+7Hteo/D9vJXQ3UfzxbwnXaijM"`,
     FOO: `W/"3-/qtA4fynfHNgzMoUgbuLpfkZzjo"`,
 } as const;
 
-export function runNotModifiedTests(label: string, express: () => Express): void {
+export function runNotModifiedTests(label: string, express: ExpressModule): void {
     describe(`${label}: not-modified`, () => {
         it("304 Not Modified", async () => {
             const app = express();

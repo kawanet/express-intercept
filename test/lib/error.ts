@@ -1,16 +1,17 @@
 import {strict as assert} from "node:assert";
 import {describe, it} from "node:test";
-import type {Express, RequestHandler} from "express";
+import type {RequestHandler} from "express";
 
 import {responseHandler} from "../../lib/express-intercept.ts";
 import {mwsupertest} from "middleware-supertest";
+import type {ExpressModule} from "./util.ts";
 
 const silentHandler = () => responseHandler((err, req, res) => {
     // use .send("") instead of .end(), since Node.js v13
     res.status(500).send("");
 });
 
-export function runErrorTests(label: string, express: () => Express): void {
+export function runErrorTests(label: string, express: ExpressModule): void {
     describe(`${label}: error`, () => {
 
         const success: RequestHandler = (req, res) => res.send("SUCCESS");

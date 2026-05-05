@@ -1,11 +1,11 @@
 import {describe, it} from "node:test";
-import type {Express} from "express";
 
 import {responseHandler} from "../../lib/express-intercept.ts";
 import {mwsupertest} from "middleware-supertest";
 import {stackRequestHeader} from "./stack-request-header.ts";
+import type {ExpressModule} from "./util.ts";
 
-export function runStackHeaderTests(label: string, express: () => Express): void {
+export function runStackHeaderTests(label: string, express: ExpressModule): void {
     describe(`${label}: stack-header`, () => {
         const addResponseHeader = (key: string) => responseHandler().interceptStream((upstream, req, res) => {
             res.setHeader(key, (req.header("x-foo") || "---") + "/" + (req.header("x-bar") || "---"));
