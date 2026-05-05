@@ -1,11 +1,11 @@
 import {describe, it} from "node:test";
+import type {Express} from "express";
 
 import {responseHandler} from "../../lib/express-intercept.ts";
 import {mwsupertest} from "middleware-supertest";
 import {stackRequestHeader} from "./stack-request-header.ts";
-import type {ExpressFactory} from "./util.ts";
 
-export function runStackHeaderTests(label: string, express: ExpressFactory): void {
+export function runStackHeaderTests(label: string, express: () => Express): void {
     describe(`${label}: stack-header`, () => {
         const addResponseHeader = (key: string) => responseHandler().interceptStream((upstream, req, res) => {
             res.setHeader(key, (req.header("x-foo") || "---") + "/" + (req.header("x-bar") || "---"));
@@ -21,7 +21,7 @@ export function runStackHeaderTests(label: string, express: ExpressFactory): voi
             app.use(addResponseHeader("x-ret3"));
             app.use(stackRequestHeader({"x-foo": "BAZ"}));
             app.use(addResponseHeader("x-ret4"));
-            app.use((req: any, res: any) => res.send("OK"));
+            app.use((req, res) => res.send("OK"));
 
             await mwsupertest(app)
                 .get("/")

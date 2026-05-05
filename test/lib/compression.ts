@@ -1,12 +1,12 @@
 import {strict as assert} from "node:assert";
 import {describe, it} from "node:test";
 import * as zlib from "node:zlib";
+import type {Express} from "express";
 
 import {requestHandler, responseHandler} from "../../lib/express-intercept.ts";
 import {mwsupertest} from "middleware-supertest";
-import type {ExpressFactory} from "./util.ts";
 
-export function runCompressionTests(label: string, express: ExpressFactory): void {
+export function runCompressionTests(label: string, express: () => Express): void {
     describe(`${label}: compression`, () => {
         runEncodingCase(label, express, "gzip", zlib.gzipSync);
         runEncodingCase(label, express, "deflate", zlib.deflateSync);
@@ -17,7 +17,7 @@ export function runCompressionTests(label: string, express: ExpressFactory): voi
             app.use(responseHandler().compressResponse());
             app.use(responseHandler().compressResponse());
             app.use(responseHandler().compressResponse());
-            app.use(requestHandler().use((req: any, res: any) => res.send("SUCCESS")));
+            app.use(requestHandler().use((req, res) => res.send("SUCCESS")));
 
             await mwsupertest(app)
                 .get("/")
@@ -43,7 +43,7 @@ export function runCompressionTests(label: string, express: ExpressFactory): voi
             app.use(responseHandler().getResponse(res => res.setHeader("x-length-1", String(res.getHeader("content-length")))));
 
             // response uncompressed body
-            app.use(requestHandler().use((req: any, res: any) => res.type("text/html").send(content)));
+            app.use(requestHandler().use((req, res) => res.type("text/html").send(content)));
 
             await mwsupertest(app)
                 .get("/")
@@ -57,7 +57,7 @@ export function runCompressionTests(label: string, express: ExpressFactory): voi
     });
 }
 
-function runEncodingCase(_label: string, express: ExpressFactory, encoding: string, _encoder: (buf: Buffer) => Buffer) {
+function runEncodingCase(_label: string, express: () => Express, encoding: string, _encoder: (buf: Buffer) => Buffer) {
     it(encoding, async () => {
         const content = `encoding=${encoding}`;
         const expected = `[encoding=${encoding}]`;
@@ -89,7 +89,7 @@ function runEncodingCase(_label: string, express: ExpressFactory, encoding: stri
         app.use(responseHandler().getResponse(res => res.setHeader("x-encoding-1", String(res.getHeader("content-encoding") || "(uncompressed)"))));
 
         // response uncompressed body
-        app.use(requestHandler().use((req: any, res: any) => res.type("text/html").send(content)));
+        app.use(requestHandler().use((req, res) => res.type("text/html").send(content)));
 
         await mwsupertest(app)
             .get("/")

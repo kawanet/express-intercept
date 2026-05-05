@@ -6,7 +6,7 @@ import {ResponsePayload} from "./_payload.ts";
 import {buildResponseHandler} from "./_handler.ts";
 import {findEncoding} from "./_compression.ts";
 import {IF, ASYNC, CATCH} from "async-request-handler";
-import type * as types from "../types/express-intercept.d.ts";
+import type * as types from "express-intercept";
 
 type CondFn<T> = (arg: T) => (boolean | Promise<boolean>);
 

@@ -1,13 +1,12 @@
 import {strict as assert} from "node:assert";
 import {describe, it} from "node:test";
 import {Transform} from "node:stream";
-import type {RequestHandler} from "express";
+import type {Express, RequestHandler} from "express";
 
 import {responseHandler} from "../../lib/express-intercept.ts";
 import {mwsupertest} from "middleware-supertest";
-import type {ExpressFactory} from "./util.ts";
 
-export function runTransformStreamTests(label: string, express: ExpressFactory): void {
+export function runTransformStreamTests(label: string, express: () => Express): void {
     describe(`${label}: transform-stream`, () => {
         const source = "Hello, world!";
         const expected = "HELLO, WORLD!!";
