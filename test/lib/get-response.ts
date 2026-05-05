@@ -1,12 +1,11 @@
 import {strict as assert} from "node:assert";
 import {describe, it} from "node:test";
-import type {Request, Response} from "express";
+import type {Express, Request, Response} from "express";
 
 import {requestHandler, responseHandler} from "../../lib/express-intercept.ts";
 import {mwsupertest} from "middleware-supertest";
-import type {ExpressFactory} from "./util.ts";
 
-export function runGetResponseTests(label: string, express: ExpressFactory): void {
+export function runGetResponseTests(label: string, express: () => Express): void {
     describe(`${label}: get-response`, () => {
         {
             it("getResponse, getResponse", async () => {
@@ -44,7 +43,7 @@ export function runGetResponseTests(label: string, express: ExpressFactory): voi
 
                 app.use(responseHandler().getBuffer((buf, req, res) => res.setHeader("x-buffer", Buffer.from(buf).toString("hex"))));
 
-                app.use((req: any, res: any) => res.send("FOO"));
+                app.use((req, res) => res.send("FOO"));
 
                 await mwsupertest(app)
                     .getString(body => assert.equal(body, "FOO"))

@@ -1,6 +1,7 @@
 // Integration tests for the Express 5 line.
 
-import express from "express5";
+import type {Express} from "express";
+import express5 from "express5";
 
 import {runCompressionTests} from "./lib/compression.ts";
 import {runConditionTests} from "./lib/condition.ts";
@@ -13,6 +14,11 @@ import {runStackHeaderTests} from "./lib/stack-header.ts";
 import {runTransformStreamTests} from "./lib/transform-stream.ts";
 
 const label = "express5";
+
+// Runtime tests cover both Express 4 and 5. Type-level dual coverage
+// is intentionally out of scope, so this cast pins express5 to the
+// Express 4 baseline that the shared runners type-check against.
+const express = express5 as unknown as () => Express;
 
 runCompressionTests(label, express);
 runConditionTests(label, express);

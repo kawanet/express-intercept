@@ -1,15 +1,15 @@
 import {strict as assert} from "node:assert";
 import {describe, it} from "node:test";
+import type {Express} from "express";
 
 import {responseHandler} from "../../lib/express-intercept.ts";
 import {mwsupertest} from "middleware-supertest";
-import type {ExpressFactory} from "./util.ts";
 
 function toHEX(buf: Buffer) {
     return Buffer.from(buf).toString("hex") || "(empty)";
 }
 
-export function runReplaceBufferTests(label: string, express: ExpressFactory): void {
+export function runReplaceBufferTests(label: string, express: () => Express): void {
     describe(`${label}: replace-buffer`, () => {
         const empty = Buffer.of();
         const source = Buffer.from("ABCD");
@@ -19,7 +19,7 @@ export function runReplaceBufferTests(label: string, express: ExpressFactory): v
             it("replaceBuffer", async () => {
                 const app = express();
                 app.use(responseHandler().replaceBuffer(() => expected));
-                app.use((req: any, res: any) => res.type("application/octet-stream").end(source));
+                app.use((req, res) => res.type("application/octet-stream").end(source));
 
                 await mwsupertest(app)
                     .getResponse(res => assert.equal(+res.statusCode, 200))
@@ -35,7 +35,7 @@ export function runReplaceBufferTests(label: string, express: ExpressFactory): v
             it("replaceBuffer async", async () => {
                 const app = express();
                 app.use(responseHandler().replaceBuffer(async () => expected));
-                app.use((req: any, res: any) => res.type("application/octet-stream").end(source));
+                app.use((req, res) => res.type("application/octet-stream").end(source));
 
                 await mwsupertest(app)
                     .getResponse(res => assert.equal(+res.statusCode, 200))
@@ -51,7 +51,7 @@ export function runReplaceBufferTests(label: string, express: ExpressFactory): v
             it("replaceBuffer to empty", async () => {
                 const app = express();
                 app.use(responseHandler().replaceBuffer(async () => empty));
-                app.use((req: any, res: any) => res.type("application/octet-stream").send(source));
+                app.use((req, res) => res.type("application/octet-stream").send(source));
 
                 await mwsupertest(app)
                     .getResponse(res => assert.equal(+res.statusCode, 200))
@@ -67,7 +67,7 @@ export function runReplaceBufferTests(label: string, express: ExpressFactory): v
             it("replaceBuffer from empty", async () => {
                 const app = express();
                 app.use(responseHandler().replaceBuffer(async () => expected));
-                app.use((req: any, res: any) => res.type("application/octet-stream").send(empty));
+                app.use((req, res) => res.type("application/octet-stream").send(empty));
 
                 await mwsupertest(app)
                     .getResponse(res => assert.equal(+res.statusCode, 200))

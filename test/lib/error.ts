@@ -1,17 +1,16 @@
 import {strict as assert} from "node:assert";
 import {describe, it} from "node:test";
-import type {RequestHandler} from "express";
+import type {Express, RequestHandler} from "express";
 
 import {responseHandler} from "../../lib/express-intercept.ts";
 import {mwsupertest} from "middleware-supertest";
-import type {ExpressFactory} from "./util.ts";
 
 const silentHandler = () => responseHandler((err, req, res) => {
     // use .send("") instead of .end(), since Node.js v13
     res.status(500).send("");
 });
 
-export function runErrorTests(label: string, express: ExpressFactory): void {
+export function runErrorTests(label: string, express: () => Express): void {
     describe(`${label}: error`, () => {
 
         const success: RequestHandler = (req, res) => res.send("SUCCESS");
@@ -22,7 +21,7 @@ export function runErrorTests(label: string, express: ExpressFactory): void {
         });
 
         it("500", async () => {
-            const app = express().use((req: any, res: any) => res.status(500).end());
+            const app = express().use((req, res) => res.status(500).end());
             await mwsupertest(app).get("/").expect(500);
         });
 

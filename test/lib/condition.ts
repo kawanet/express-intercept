@@ -1,11 +1,11 @@
 import {strict as assert} from "node:assert";
 import {describe, it} from "node:test";
+import type {Express} from "express";
 
 import {requestHandler, responseHandler} from "../../lib/express-intercept.ts";
 import {mwsupertest} from "middleware-supertest";
-import type {ExpressFactory} from "./util.ts";
 
-export function runConditionTests(label: string, express: ExpressFactory): void {
+export function runConditionTests(label: string, express: () => Express): void {
     describe(`${label}: condition`, () => {
         {
             it("if, for", async () => {
@@ -37,7 +37,7 @@ export function runConditionTests(label: string, express: ExpressFactory): void 
                     .if((res: any) => /H/.test(String(res.getHeader("x-path"))))
                     .replaceString((str: string) => str + "GH"));
 
-                app.use(requestHandler().use((req: any, res: any) => {
+                app.use(requestHandler().use((req, res) => {
                     res.setHeader("x-path", req.path);
                     res.send("/");
                 }));
@@ -80,7 +80,7 @@ export function runConditionTests(label: string, express: ExpressFactory): void 
                     .if(async (res: any) => /H/.test(String(res.getHeader("x-path"))))
                     .replaceString(async (str: string) => str + "GH"));
 
-                app.use(requestHandler().use(async (req: any, res: any) => {
+                app.use(requestHandler().use(async (req, res) => {
                     res.setHeader("x-path", req.path);
                     res.send("/");
                 }));
