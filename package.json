@@ -39,11 +39,9 @@
   },
   "exports": {
     ".": {
+      "types": "./types/express-intercept.d.ts",
       "require": "./dist/express-intercept.cjs",
-      "import": {
-        "types": "./types/express-intercept.d.ts",
-        "default": "./dist/express-intercept.mjs"
-      }
+      "import": "./dist/express-intercept.mjs"
     }
   },
   "files": [
