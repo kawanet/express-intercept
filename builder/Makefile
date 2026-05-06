@@ -73,7 +73,7 @@ smoke-cjs: $(CJS_DST)
 # Informative messages are shown when skipping.
 test: all smoke $(TYPES)
 	@ [ "$$npm_command" != "install" ] || echo "npm install detected: skipping full tests."
-	@ [ "$npm_command" = "install" ] || $(MAKE) test-ts
+	@ [ "$$npm_command" = "install" ] || $(MAKE) test-ts
 
 # Actual test commands requiring Node.js 22+.
 test-ts:
