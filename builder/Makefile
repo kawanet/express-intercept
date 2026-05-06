@@ -31,12 +31,13 @@ all: is-buildable $(ALL)
 # Gate that fails loudly when type-strip is unavailable; consumed by `all`
 # and by `npm prepack` to refuse packaging on a non-buildable runtime.
 is-buildable:
-	@ [ "$(BUILDABLE)" = "YES" ] || { echo "ERROR: Node type-strip required (Node 22.18+); BUILDABLE=$(BUILDABLE)" >&2; exit 1; }
+	@ [ "$(BUILDABLE)" = "YES" ]
 
 # Inverse gate used by `npm prepare` to short-circuit on a non-buildable
 # runtime so consumer install on Node 20 silently skips build/test.
 is-not-buildable:
 	@ [ "$(BUILDABLE)" = "NO" ]
+
 $(MJS_DST): $(MJS_CONFIG) $(SRC) $(BUILDER_SRC)
 	@mkdir -p $(dir $@)
 	../node_modules/.bin/rollup -c $<
