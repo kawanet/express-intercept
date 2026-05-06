@@ -3,11 +3,13 @@
 import type {ErrorRequestHandler, Request, RequestHandler, Response} from "express";
 import type {Readable} from "stream";
 
+export {} // external module indicator
+
 export declare const requestHandler: (errorHandler?: ErrorRequestHandler) => RequestHandlerBuilder;
 
 export declare const responseHandler: (errorHandler?: ErrorRequestHandler) => ResponseHandlerBuilder;
 
-declare interface RequestHandlerBuilder {
+export interface RequestHandlerBuilder {
     /**
      * It appends a test condition to perform the RequestHandler.
      * Call this for multiple times to add multiple tests in AND condition.
@@ -28,7 +30,7 @@ declare interface RequestHandlerBuilder {
     getRequest(receiver: (req: Request) => (any | Promise<any>)): RequestHandler;
 }
 
-declare interface ResponseHandlerBuilder extends RequestHandlerBuilder {
+export interface ResponseHandlerBuilder extends RequestHandlerBuilder {
     /**
      * It appends a test condition to perform the RequestHandler.
      * Call this for multiple times to add multiple tests in AND condition.
