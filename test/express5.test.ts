@@ -1,9 +1,6 @@
 // Integration tests for the Express 5 line.
 
 import express5 from "express5"
-
-import type {ExpressModule} from "./lib/util.ts"
-
 import {runCompressionTests} from "./lib/compression.ts"
 import {runConditionTests} from "./lib/condition.ts"
 import {runErrorTests} from "./lib/error.ts"
@@ -13,6 +10,7 @@ import {runReplaceBufferTests} from "./lib/replace-buffer.ts"
 import {runReplaceStringTests} from "./lib/replace-string.ts"
 import {runStackHeaderTests} from "./lib/stack-header.ts"
 import {runTransformStreamTests} from "./lib/transform-stream.ts"
+import type {ExpressModule} from "./lib/util.ts"
 
 const label = "express5"
 

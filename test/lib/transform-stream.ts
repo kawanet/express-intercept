@@ -1,9 +1,8 @@
 import type {RequestHandler} from "express"
+import {mwsupertest} from "middleware-supertest"
 import {strict as assert} from "node:assert"
 import {Transform} from "node:stream"
 import {describe, it} from "node:test"
-
-import {mwsupertest} from "middleware-supertest"
 import {responseHandler} from "../../lib/express-intercept.ts"
 import type {ExpressModule} from "./util.ts"
 

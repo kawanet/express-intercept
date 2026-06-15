@@ -1,7 +1,6 @@
 // Integration tests for the Express 4 line.
 
 import express from "express4"
-
 import {runCompressionTests} from "./lib/compression.ts"
 import {runConditionTests} from "./lib/condition.ts"
 import {runErrorTests} from "./lib/error.ts"
