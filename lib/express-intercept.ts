@@ -1,36 +1,36 @@
 // express-intercept.ts
 
-import type {ErrorRequestHandler, Request, RequestHandler, Response} from "express";
-import {Readable} from "node:stream";
-import {ResponsePayload} from "./_payload.ts";
-import {buildResponseHandler} from "./_handler.ts";
-import {findEncoding} from "./_compression.ts";
-import {IF, ASYNC, CATCH} from "async-request-handler";
-import type * as types from "express-intercept";
+import {ASYNC, CATCH, IF} from "async-request-handler"
+import type {ErrorRequestHandler, Request, RequestHandler, Response} from "express"
+import type * as types from "express-intercept"
+import {Readable} from "node:stream"
+import {findEncoding} from "./_compression.ts"
+import {buildResponseHandler} from "./_handler.ts"
+import {ResponsePayload} from "./_payload.ts"
 
-type CondFn<T> = (arg: T) => (boolean | Promise<boolean>);
+type CondFn<T> = (arg: T) => (boolean | Promise<boolean>)
 
 export const requestHandler: typeof types.requestHandler = errorHandler => {
-    return new RequestHandlerBuilder(errorHandler || defaultErrorHandler);
+    return new RequestHandlerBuilder(errorHandler || defaultErrorHandler)
 }
 
 export const responseHandler: typeof types.responseHandler = errorHandler => {
-    return new ResponseHandlerBuilder(errorHandler || defaultErrorHandler);
+    return new ResponseHandlerBuilder(errorHandler || defaultErrorHandler)
 }
 
 const defaultErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
-    console.error(err);
+    console.error(err)
 
     // use .send("") instead of .end(), since Node.js v13
-    res.status(500).send("");
-};
+    res.status(500).send("")
+}
 
 class RequestHandlerBuilder implements types.RequestHandlerBuilder {
     constructor(errorHandler?: ErrorRequestHandler) {
-        this._error = errorHandler;
+        this._error = errorHandler
     }
 
-    _error: ErrorRequestHandler;
+    _error: ErrorRequestHandler
 
     /**
      * It appends a test condition to perform the RequestHandler.
@@ -39,11 +39,11 @@ class RequestHandlerBuilder implements types.RequestHandlerBuilder {
      */
 
     for(condition: (req: Request) => (boolean | Promise<boolean>)): this {
-        this._for = AND<Request>(this._for, condition);
-        return this;
+        this._for = AND<Request>(this._for, condition)
+        return this
     }
 
-    _for: ((req: Request) => (boolean | Promise<boolean>));
+    _for: ((req: Request) => (boolean | Promise<boolean>))
 
     /**
      * It returns a RequestHandler which connects multiple RequestHandlers.
@@ -51,19 +51,19 @@ class RequestHandlerBuilder implements types.RequestHandlerBuilder {
      */
 
     use(handler: RequestHandler, ...more: RequestHandler[]): RequestHandler {
-        let {_for, _error} = this;
+        let {_for, _error} = this
 
         if (more.length) {
-            handler = ASYNC(handler, ASYNC.apply(null, more));
+            handler = ASYNC(handler, ASYNC.apply(null, more))
         } else {
-            handler = ASYNC(handler);
+            handler = ASYNC(handler)
         }
 
-        if (_for) handler = IF(_for, handler);
+        if (_for) handler = IF(_for, handler)
 
-        if (_error) handler = ASYNC(handler, CATCH(_error));
+        if (_error) handler = ASYNC(handler, CATCH(_error))
 
-        return handler;
+        return handler
     }
 
     /**
@@ -73,14 +73,14 @@ class RequestHandlerBuilder implements types.RequestHandlerBuilder {
 
     getRequest(receiver: (req: Request) => (any | Promise<any>)): RequestHandler {
         return this.use(async (req, res, next) => {
-            await receiver(req);
-            next();
-        });
+            await receiver(req)
+            next()
+        })
     }
 }
 
 class ResponseHandlerBuilder extends RequestHandlerBuilder implements types.ResponseHandlerBuilder {
-    use: never;
+    use: never
 
     /**
      * It appends a test condition to perform the RequestHandler.
@@ -89,11 +89,11 @@ class ResponseHandlerBuilder extends RequestHandlerBuilder implements types.Resp
      */
 
     if(condition: (res: Response) => (boolean | Promise<boolean>)): this {
-        this._if = AND<Response>(this._if, condition);
-        return this;
+        this._if = AND<Response>(this._if, condition)
+        return this
     }
 
-    _if: ((res: Response) => (boolean | Promise<boolean>));
+    _if: ((res: Response) => (boolean | Promise<boolean>))
 
     /**
      * It returns a RequestHandler to replace the response content body as a string.
@@ -102,11 +102,11 @@ class ResponseHandlerBuilder extends RequestHandlerBuilder implements types.Resp
 
     replaceString(replacer: (body: string, req?: Request, res?: Response) => (string | Promise<string>)): RequestHandler {
         return super.use(buildResponseHandler<ResponsePayload>(this, async (payload, req, res) => {
-            const body = payload.getString();
-            const replaced = await replacer(body, req, res);
-            if (body === replaced) return; // nothing changed
-            payload.setString(replaced);
-        }));
+            const body = payload.getString()
+            const replaced = await replacer(body, req, res)
+            if (body === replaced) return // nothing changed
+            payload.setString(replaced)
+        }))
     }
 
     /**
@@ -116,10 +116,10 @@ class ResponseHandlerBuilder extends RequestHandlerBuilder implements types.Resp
 
     replaceBuffer(replacer: (body: Buffer, req?: Request, res?: Response) => (Buffer | Promise<Buffer>)): RequestHandler {
         return super.use(buildResponseHandler<ResponsePayload>(this, async (payload, req, res) => {
-            let body = payload.getBuffer();
-            body = await replacer(body, req, res);
-            payload.setBuffer(body);
-        }));
+            let body = payload.getBuffer()
+            body = await replacer(body, req, res)
+            payload.setBuffer(body)
+        }))
     }
 
     /**
@@ -132,8 +132,8 @@ class ResponseHandlerBuilder extends RequestHandlerBuilder implements types.Resp
 
     interceptStream(interceptor: (upstream: Readable, req: Request, res: Response) => (Readable | Promise<Readable>)): RequestHandler {
         return super.use(buildResponseHandler<Readable>(this, async (payload, req, res) => {
-            return interceptor(payload, req, res);
-        }, () => new ReadablePayload()));
+            return interceptor(payload, req, res)
+        }, () => new ReadablePayload()))
     }
 
     /**
@@ -143,9 +143,9 @@ class ResponseHandlerBuilder extends RequestHandlerBuilder implements types.Resp
 
     getString(receiver: (body: string, req?: Request, res?: Response) => (any | Promise<any>)): RequestHandler {
         return super.use(buildResponseHandler<ResponsePayload>(this, async (payload, req, res) => {
-            const body = payload.getString();
-            await receiver(body, req, res);
-        }));
+            const body = payload.getString()
+            await receiver(body, req, res)
+        }))
     }
 
     /**
@@ -155,9 +155,9 @@ class ResponseHandlerBuilder extends RequestHandlerBuilder implements types.Resp
 
     getBuffer(receiver: (body: Buffer, req?: Request, res?: Response) => (any | Promise<any>)): RequestHandler {
         return super.use(buildResponseHandler<ResponsePayload>(this, async (payload, req, res) => {
-            const body = payload.getBuffer();
-            await receiver(body, req, res);
-        }));
+            const body = payload.getBuffer()
+            await receiver(body, req, res)
+        }))
     }
 
     /**
@@ -167,8 +167,8 @@ class ResponseHandlerBuilder extends RequestHandlerBuilder implements types.Resp
 
     getRequest(receiver: (req: Request) => (any | Promise<any>)): RequestHandler {
         return super.use(buildResponseHandler<ResponsePayload>(this, async (payload, req, res) => {
-            await receiver(req);
-        }));
+            await receiver(req)
+        }))
     }
 
     /**
@@ -177,8 +177,8 @@ class ResponseHandlerBuilder extends RequestHandlerBuilder implements types.Resp
 
     getResponse(receiver: (res: Response) => (any | Promise<any>)): RequestHandler {
         return super.use(buildResponseHandler<ResponsePayload>(this, async (payload, req, res) => {
-            await receiver(res);
-        }));
+            await receiver(res)
+        }))
     }
 
     /**
@@ -187,12 +187,12 @@ class ResponseHandlerBuilder extends RequestHandlerBuilder implements types.Resp
 
     compressResponse(): RequestHandler {
         return this.replaceBuffer((buf, req, res) => {
-            const encoding = findEncoding(req.header("Accept-Encoding"));
+            const encoding = findEncoding(req.header("Accept-Encoding"))
             if (encoding) {
-                res.setHeader("Content-Encoding", encoding); // signal to compress with the encoding
+                res.setHeader("Content-Encoding", encoding) // signal to compress with the encoding
             }
-            return buf;
-        });
+            return buf
+        })
     }
 
     /**
@@ -201,9 +201,9 @@ class ResponseHandlerBuilder extends RequestHandlerBuilder implements types.Resp
 
     decompressResponse(): RequestHandler {
         return this.replaceBuffer((buf, req, res) => {
-            res.removeHeader("Content-Encoding"); // signal NOT to compress
-            return buf;
-        });
+            res.removeHeader("Content-Encoding") // signal NOT to compress
+            return buf
+        })
     }
 }
 
@@ -218,18 +218,18 @@ class ReadablePayload extends Readable {
  */
 
 function AND<T>(A: CondFn<T>, B: CondFn<T>): CondFn<T> {
-    if (!A) return B;
-    if (!B) return A;
+    if (!A) return B
+    if (!B) return A
 
     return (arg: T) => {
-        let result = A(arg);
+        let result = A(arg)
         // result: false
-        if (!result) return false;
+        if (!result) return false
         // result: true
-        if (!isThenable(result as Promise<boolean>)) return B(arg);
+        if (!isThenable(result as Promise<boolean>)) return B(arg)
         // result: Promise<boolean>
-        return (result as Promise<boolean>).then(result => (result && B(arg)));
-    };
+        return (result as Promise<boolean>).then(result => (result && B(arg)))
+    }
 }
 
-const isThenable = <T>(value: Promise<T>): boolean => ("function" === typeof (value.then));
+const isThenable = <T>(value: Promise<T>): boolean => ("function" === typeof (value.then))

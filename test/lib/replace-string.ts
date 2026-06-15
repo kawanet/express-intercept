@@ -1,21 +1,20 @@
-import {strict as assert} from "node:assert";
-import {describe, it} from "node:test";
-
-import {responseHandler} from "../../lib/express-intercept.ts";
-import {mwsupertest} from "middleware-supertest";
-import type {ExpressModule} from "./util.ts";
+import {mwsupertest} from "middleware-supertest"
+import {strict as assert} from "node:assert"
+import {describe, it} from "node:test"
+import {responseHandler} from "../../lib/express-intercept.ts"
+import type {ExpressModule} from "./util.ts"
 
 export function runReplaceStringTests(label: string, express: ExpressModule): void {
     describe(`${label}: replace-string`, () => {
-        const empty = "";
-        const source = "Hello, {{name}}!";
-        const expected = "Hello, John!";
+        const empty = ""
+        const source = "Hello, {{name}}!"
+        const expected = "Hello, John!"
 
         {
             it("replaceString", async () => {
-                const app = express();
-                app.use(responseHandler().replaceString(str => str.replace("{{name}}", "John")));
-                app.use((req, res) => res.send(source));
+                const app = express()
+                app.use(responseHandler().replaceString(str => str.replace("{{name}}", "John")))
+                app.use((req, res) => res.send(source))
 
                 await mwsupertest(app)
                     .getResponse(res => assert.equal(+res.statusCode, 200))
@@ -23,15 +22,15 @@ export function runReplaceStringTests(label: string, express: ExpressModule): vo
                     .getString(body => assert.equal(body, expected))
                     .get("/")
                     .expect(200)
-                    .then(res => assert.equal(res.text, expected));
-            });
+                    .then(res => assert.equal(res.text, expected))
+            })
         }
 
         {
             it("replaceString async", async () => {
-                const app = express();
-                app.use(responseHandler().replaceString(async str => str.replace("{{name}}", "John")));
-                app.use((req, res) => res.send(source));
+                const app = express()
+                app.use(responseHandler().replaceString(async str => str.replace("{{name}}", "John")))
+                app.use((req, res) => res.send(source))
 
                 await mwsupertest(app)
                     .getResponse(res => assert.equal(+res.statusCode, 200))
@@ -39,15 +38,15 @@ export function runReplaceStringTests(label: string, express: ExpressModule): vo
                     .getString(body => assert.equal(body, expected))
                     .get("/")
                     .expect(200)
-                    .then(res => assert.equal(res.text, expected));
-            });
+                    .then(res => assert.equal(res.text, expected))
+            })
         }
 
         {
             it("replaceString to empty", async () => {
-                const app = express();
-                app.use(responseHandler().replaceString(async () => empty));
-                app.use((req, res) => res.send(source));
+                const app = express()
+                app.use(responseHandler().replaceString(async () => empty))
+                app.use((req, res) => res.send(source))
 
                 await mwsupertest(app)
                     .getResponse(res => assert.equal(+res.statusCode, 200))
@@ -55,15 +54,15 @@ export function runReplaceStringTests(label: string, express: ExpressModule): vo
                     .getString(body => assert.equal(body, empty))
                     .get("/")
                     .expect(200)
-                    .then(res => assert.equal(res.text || "empty", "empty"));
-            });
+                    .then(res => assert.equal(res.text || "empty", "empty"))
+            })
         }
 
         {
             it("replaceString from empty", async () => {
-                const app = express();
-                app.use(responseHandler().replaceString(async () => expected));
-                app.use((req, res) => res.send(empty));
+                const app = express()
+                app.use(responseHandler().replaceString(async () => expected))
+                app.use((req, res) => res.send(empty))
 
                 await mwsupertest(app)
                     .getResponse(res => assert.equal(+res.statusCode, 200))
@@ -71,15 +70,15 @@ export function runReplaceStringTests(label: string, express: ExpressModule): vo
                     .getString(body => assert.equal(body, expected))
                     .get("/")
                     .expect(200)
-                    .then(res => assert.equal(res.text, expected));
-            });
+                    .then(res => assert.equal(res.text, expected))
+            })
         }
 
         {
             it("replaceString without change", async () => {
-                const app = express();
-                app.use(responseHandler().replaceString(str => str));
-                app.use((req, res) => res.send(expected));
+                const app = express()
+                app.use(responseHandler().replaceString(str => str))
+                app.use((req, res) => res.send(expected))
 
                 await mwsupertest(app)
                     .getResponse(res => assert.equal(+res.statusCode, 200))
@@ -87,8 +86,8 @@ export function runReplaceStringTests(label: string, express: ExpressModule): vo
                     .getString(body => assert.equal(body, expected))
                     .get("/")
                     .expect(200)
-                    .then(res => assert.equal(res.text, expected));
-            });
+                    .then(res => assert.equal(res.text, expected))
+            })
         }
-    });
+    })
 }

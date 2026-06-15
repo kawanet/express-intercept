@@ -9,4 +9,4 @@
 // Express ships as a CommonJS `export = e` namespace, so
 // `typeof import("express")` resolves to the value of `import express
 // from "express"` directly (no `.default`).
-export type ExpressModule = typeof import("express");
+export type ExpressModule = typeof import("express")
