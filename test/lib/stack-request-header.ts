@@ -1,36 +1,36 @@
 // stack-request-header.ts
 
-import type {Request, RequestHandler} from "express";
-import {requestHandler, responseHandler} from "../../lib/express-intercept.ts";
+import type {Request, RequestHandler} from "express"
+import {requestHandler, responseHandler} from "../../lib/express-intercept.ts"
 
-type Headers = { [key: string]: string }; // http.IncomingHttpHeaders
+type Headers = {[key: string]: string} // http.IncomingHttpHeaders
 
 export function stackRequestHeader(headers: Headers): RequestHandler {
-    const keys = Object.keys(headers);
-    const stack = {} as Headers;
+    const keys = Object.keys(headers)
+    const stack = {} as Headers
 
     return requestHandler().use(
         requestHandler().getRequest(pushHeader),
-        responseHandler().getRequest(popHeader)
-    );
+        responseHandler().getRequest(popHeader),
+    )
 
     function pushHeader(req: Request) {
-        const reqHeaders = req.headers;
+        const reqHeaders = req.headers
         keys.forEach(key => {
-            const val = headers[key];
+            const val = headers[key]
             if (val) {
-                stack[key] = reqHeaders[key] as string;
-                reqHeaders[key] = val;
+                stack[key] = reqHeaders[key] as string
+                reqHeaders[key] = val
             } else {
-                delete reqHeaders[key];
+                delete reqHeaders[key]
             }
-        });
+        })
     }
 
     function popHeader(req: Request) {
-        const reqHeaders = req.headers;
+        const reqHeaders = req.headers
         keys.forEach(key => {
-            reqHeaders[key] = stack[key];
-        });
+            reqHeaders[key] = stack[key]
+        })
     }
 }

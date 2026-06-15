@@ -10,6 +10,6 @@ export const showFiles = (): Plugin => {
         load(id) {
             id = id.replace(projectRoot, "").replace(/^\//, "")
             console.warn(`import: ${id}`)
-        }
+        },
     }
 }

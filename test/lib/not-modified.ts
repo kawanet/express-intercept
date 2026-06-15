@@ -1,45 +1,45 @@
-import {describe, it} from "node:test";
+import {describe, it} from "node:test"
 
-import {responseHandler} from "../../lib/express-intercept.ts";
-import {mwsupertest} from "middleware-supertest";
-import type {ExpressModule} from "./util.ts";
+import {responseHandler} from "../../lib/express-intercept.ts"
+import {mwsupertest} from "middleware-supertest"
+import type {ExpressModule} from "./util.ts"
 
 const ETag = {
     foo: `W/"3-C+7Hteo/D9vJXQ3UfzxbwnXaijM"`,
     FOO: `W/"3-/qtA4fynfHNgzMoUgbuLpfkZzjo"`,
-} as const;
+} as const
 
 export function runNotModifiedTests(label: string, express: ExpressModule): void {
     describe(`${label}: not-modified`, () => {
         it("304 Not Modified", async () => {
-            const app = express();
+            const app = express()
 
-            app.use("/upper/304", responseHandler().getResponse(res => (res.statusCode = 304)));
-            app.use("/lower/304", responseHandler().getResponse(res => (res.statusCode = 304)));
-            app.use("/upper/", responseHandler().replaceString(str => str.toUpperCase()));
-            app.use("/", (req, res) => res.send("foo"));
+            app.use("/upper/304", responseHandler().getResponse(res => (res.statusCode = 304)))
+            app.use("/lower/304", responseHandler().getResponse(res => (res.statusCode = 304)))
+            app.use("/upper/", responseHandler().replaceString(str => str.toUpperCase()))
+            app.use("/", (req, res) => res.send("foo"))
 
             await mwsupertest(app).get("/lower/")
                 .expect(200)
                 .expect("foo")
-                .expect("etag", ETag.foo);
+                .expect("etag", ETag.foo)
 
             await mwsupertest(app).get("/upper/")
                 .expect(200)
                 .expect("FOO")
-                .expect("etag", ETag.FOO);
+                .expect("etag", ETag.FOO)
 
             // response body must by empty on 304 Not Modified response
 
             await mwsupertest(app).get("/lower/304")
                 .expect(304)
                 .expect("")
-                .expect("etag", ETag.foo);
+                .expect("etag", ETag.foo)
 
             await mwsupertest(app).get("/upper/304")
                 .expect(304)
                 .expect("")
-                .expect("etag", ETag.FOO);
-        });
-    });
+                .expect("etag", ETag.FOO)
+        })
+    })
 }

@@ -1,29 +1,29 @@
-import {strict as assert} from "node:assert";
-import {describe, it} from "node:test";
-import type {Request, Response} from "express";
+import {strict as assert} from "node:assert"
+import {describe, it} from "node:test"
+import type {Request, Response} from "express"
 
-import {requestHandler, responseHandler} from "../../lib/express-intercept.ts";
-import {mwsupertest} from "middleware-supertest";
-import type {ExpressModule} from "./util.ts";
+import {requestHandler, responseHandler} from "../../lib/express-intercept.ts"
+import {mwsupertest} from "middleware-supertest"
+import type {ExpressModule} from "./util.ts"
 
 export function runGetResponseTests(label: string, express: ExpressModule): void {
     describe(`${label}: get-response`, () => {
         {
             it("getResponse, getResponse", async () => {
-                const app = express();
+                const app = express()
 
-                app.use(requestHandler().getRequest(req => req.headers["x-req-req"] = "A"));
-                app.use(responseHandler().getRequest(req => req.headers["x-req-res"] = "B"));
-                app.use(responseHandler().getResponse(res => res.setHeader("x-res-res", "D")));
+                app.use(requestHandler().getRequest(req => req.headers["x-req-req"] = "A"))
+                app.use(responseHandler().getRequest(req => req.headers["x-req-res"] = "B"))
+                app.use(responseHandler().getResponse(res => res.setHeader("x-res-res", "D")))
 
                 app.use((req: Request, res: Response) => {
-                    const reqreq = req.headers["x-req-req"] || "-";
-                    const reqres = req.headers["x-req-res"] || "-";
-                    const resreq = res.getHeader("x-res-req") || "-";
-                    const resres = res.getHeader("x-res-res") || "-";
-                    const body = [reqreq, reqres, resreq, resres].join("");
-                    res.send(body);
-                });
+                    const reqreq = req.headers["x-req-req"] || "-"
+                    const reqres = req.headers["x-req-res"] || "-"
+                    const resreq = res.getHeader("x-res-req") || "-"
+                    const resres = res.getHeader("x-res-res") || "-"
+                    const body = [reqreq, reqres, resreq, resres].join("")
+                    res.send(body)
+                })
 
                 await mwsupertest(app)
                     .getString(body => assert.equal(body, "A---"))
@@ -32,19 +32,19 @@ export function runGetResponseTests(label: string, express: ExpressModule): void
                     .getResponse(res => assert.equal(res.getHeader("x-res-res"), "D"))
                     .get("/")
                     .expect(200)
-                    .expect("A---");
-            });
+                    .expect("A---")
+            })
         }
 
         {
             it("getString, getBuffer", async () => {
-                const app = express();
+                const app = express()
 
-                app.use(responseHandler().getString((str, req, res) => res.setHeader("x-string", str)));
+                app.use(responseHandler().getString((str, req, res) => res.setHeader("x-string", str)))
 
-                app.use(responseHandler().getBuffer((buf, req, res) => res.setHeader("x-buffer", Buffer.from(buf).toString("hex"))));
+                app.use(responseHandler().getBuffer((buf, req, res) => res.setHeader("x-buffer", Buffer.from(buf).toString("hex"))))
 
-                app.use((req, res) => res.send("FOO"));
+                app.use((req, res) => res.send("FOO"))
 
                 await mwsupertest(app)
                     .getString(body => assert.equal(body, "FOO"))
@@ -52,8 +52,8 @@ export function runGetResponseTests(label: string, express: ExpressModule): void
                     .getResponse(res => assert.equal(res.getHeader("x-buffer") as string, Buffer.from("FOO").toString("hex")))
                     .get("/")
                     .expect(200)
-                    .expect("FOO");
-            });
+                    .expect("FOO")
+            })
         }
-    });
+    })
 }
