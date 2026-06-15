@@ -5,7 +5,7 @@ import {Writable} from "node:stream"
 import {compressBuffer, decompressBuffer, findEncoding} from "./_compression.ts"
 
 type CallbackFn = (err?: Error) => void
-type ChunkItem = [string | Buffer, any?, any?]
+type ChunkItem = [string | Buffer, BufferEncoding?, any?]
 
 function send(queue: ChunkItem[], dest: Writable, cb?: CallbackFn) {
     let error: Error
@@ -15,7 +15,7 @@ function send(queue: ChunkItem[], dest: Writable, cb?: CallbackFn) {
         try {
             dest.end(item[0], item[1], sendResult)
         } catch (e) {
-            catchError(e)
+            catchError(e as Error)
         }
     } else {
         try {
@@ -23,14 +23,14 @@ function send(queue: ChunkItem[], dest: Writable, cb?: CallbackFn) {
                 if (!error) dest.write(item[0], item[1], catchError)
             })
         } catch (e) {
-            catchError(e)
+            catchError(e as Error)
         }
 
         // close stream even after error
         try {
             dest.end(sendResult)
         } catch (e) {
-            catchError(e)
+            catchError(e as Error)
         }
     }
 
@@ -54,7 +54,7 @@ export class ResponsePayload {
         this.res = res
     }
 
-    push(chunk: any, encoding?: string): void {
+    push(chunk: any, encoding?: BufferEncoding): void {
         if (chunk == null) return // EOF
         this.queue.push([chunk, encoding])
     }
