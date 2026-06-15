@@ -7,7 +7,7 @@ import {ResponsePayload} from "./_payload.ts"
 type CallbackFn = (err?: Error) => void
 
 interface IReadable {
-    push: (chunk: any, encoding?: string) => void
+    push: (chunk: any, encoding?: BufferEncoding) => (boolean | void)
     pipe: (destination: Writable) => Writable
 }
 
@@ -33,7 +33,7 @@ export function buildResponseHandler<T extends IReadable>(
         const original_write = res.write
         const intercept_write = res.write = function (chunk: any, encoding?: any, cb?: CallbackFn) {
             if (!started) start()
-            if (stopped) return original_write.apply(this, arguments)
+            if (stopped) return original_write.apply(this, arguments as any)
 
             const item = [].slice.call(arguments)
             if ("function" === typeof item[item.length - 1]) cb = item.pop()
@@ -48,7 +48,7 @@ export function buildResponseHandler<T extends IReadable>(
             if (!stopped && !started) start()
             const _stopped = stopped
             if (!stopped) stop()
-            if (_stopped) return original_end.apply(this, arguments)
+            if (_stopped) return original_end.apply(this, arguments as any)
 
             const item = [].slice.call(arguments)
             if ("function" === typeof item[item.length - 1]) cb = item.pop()
@@ -75,7 +75,7 @@ export function buildResponseHandler<T extends IReadable>(
                 condition = !_if || _if(res)
                 if (!condition) return stop()
             } catch (e) {
-                error = e
+                error = e as Error
                 return
             }
 

@@ -54,7 +54,7 @@ class RequestHandlerBuilder implements types.RequestHandlerBuilder {
         let {_for, _error} = this
 
         if (more.length) {
-            handler = ASYNC(handler, ASYNC.apply(null, more))
+            handler = ASYNC(handler, ASYNC(more[0], ...more.slice(1)))
         } else {
             handler = ASYNC(handler)
         }
