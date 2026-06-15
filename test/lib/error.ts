@@ -1,9 +1,9 @@
+import type {RequestHandler} from "express"
 import {strict as assert} from "node:assert"
 import {describe, it} from "node:test"
-import type {RequestHandler} from "express"
 
-import {responseHandler} from "../../lib/express-intercept.ts"
 import {mwsupertest} from "middleware-supertest"
+import {responseHandler} from "../../lib/express-intercept.ts"
 import type {ExpressModule} from "./util.ts"
 
 const silentHandler = () => responseHandler((err, req, res) => {

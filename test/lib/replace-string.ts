@@ -1,8 +1,8 @@
 import {strict as assert} from "node:assert"
 import {describe, it} from "node:test"
 
-import {responseHandler} from "../../lib/express-intercept.ts"
 import {mwsupertest} from "middleware-supertest"
+import {responseHandler} from "../../lib/express-intercept.ts"
 import type {ExpressModule} from "./util.ts"
 
 export function runReplaceStringTests(label: string, express: ExpressModule): void {
