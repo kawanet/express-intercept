@@ -1,6 +1,6 @@
 # express-intercept
 
-[![Node.js CI](https://github.com/kawanet/express-intercept/actions/workflows/nodejs.yml/badge.svg?branch=master)](https://github.com/kawanet/express-intercept/actions/)
+[![Node.js CI](https://github.com/kawanet/express-intercept/actions/workflows/nodejs.yml/badge.svg?branch=main)](https://github.com/kawanet/express-intercept/actions/)
 [![npm version](https://img.shields.io/npm/v/express-intercept)](https://www.npmjs.com/package/express-intercept)
 
 Build Express middleware to intercept / replace / inspect / transform response
@@ -51,7 +51,7 @@ app.use(responseHandler().if(res => (+res.statusCode === 200)).decompressRespons
 ## METHODS
 
 See TypeScript declaration
-[express-intercept.d.ts](https://github.com/kawanet/express-intercept/blob/master/types/express-intercept.d.ts)
+[express-intercept.d.ts](https://github.com/kawanet/express-intercept/blob/main/types/express-intercept.d.ts)
 for more detail.
 
 #### `for(condition: (req: Request) => boolean)`
