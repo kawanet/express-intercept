@@ -9,10 +9,10 @@ jobs:
       matrix:
         node-version: [ "22", "24", "26" ]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node-version }}
 
@@ -25,13 +25,13 @@ jobs:
 
       # Validate runtime compatibility with Node.js 20 (LTS/EOL)
       - name: Setup Node.js 20 for smoke test
-        if: matrix.node-version == '22'
-        uses: actions/setup-node@v6
+        if: matrix.node-version == '24'
+        uses: actions/setup-node@v7
         with:
           node-version: 20
 
       - name: Run smoke tests on Node.js 20
-        if: matrix.node-version == '22'
+        if: matrix.node-version == '24'
         run: |
           node -v | grep -q "^v20"
           rm -rf node_modules package-lock.json
