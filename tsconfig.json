@@ -24,7 +24,8 @@
     "removeComments": false,
     "resolveJsonModule": true,
     "skipLibCheck": true,
-    "strictNullChecks": false,
+    "strictNullChecks": true,
+    "strictPropertyInitialization": true,
     "target": "ES2022",
     "verbatimModuleSyntax": true
   }

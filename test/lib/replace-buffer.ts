@@ -22,7 +22,7 @@ export function runReplaceBufferTests(label: string, express: ExpressModule): vo
 
                 await mwsupertest(app)
                     .getResponse(res => assert.equal(+res.statusCode, 200))
-                    .getResponse(res => assert.equal(+res.getHeader("content-length"), expected.length))
+                    .getResponse(res => assert.equal(+res.getHeader("content-length")!, expected.length))
                     .getBuffer(body => assert.equal(toHEX(body), toHEX(expected)))
                     .get("/")
                     .expect(200)
@@ -38,7 +38,7 @@ export function runReplaceBufferTests(label: string, express: ExpressModule): vo
 
                 await mwsupertest(app)
                     .getResponse(res => assert.equal(+res.statusCode, 200))
-                    .getResponse(res => assert.equal(+res.getHeader("content-length"), expected.length))
+                    .getResponse(res => assert.equal(+res.getHeader("content-length")!, expected.length))
                     .getBuffer(body => assert.equal(toHEX(body), toHEX(expected)))
                     .get("/")
                     .expect(200)
@@ -54,7 +54,7 @@ export function runReplaceBufferTests(label: string, express: ExpressModule): vo
 
                 await mwsupertest(app)
                     .getResponse(res => assert.equal(+res.statusCode, 200))
-                    .getResponse(res => assert.equal(+res.getHeader("content-length") | 0, 0))
+                    .getResponse(res => assert.equal(+res.getHeader("content-length")! | 0, 0))
                     .getBuffer(body => assert.equal(toHEX(body), toHEX(empty)))
                     .get("/")
                     .expect(200)
@@ -70,7 +70,7 @@ export function runReplaceBufferTests(label: string, express: ExpressModule): vo
 
                 await mwsupertest(app)
                     .getResponse(res => assert.equal(+res.statusCode, 200))
-                    .getResponse(res => assert.equal(+res.getHeader("content-length"), expected.length))
+                    .getResponse(res => assert.equal(+res.getHeader("content-length")!, expected.length))
                     .getBuffer(body => assert.equal(toHEX(body), toHEX(expected)))
                     .get("/")
                     .expect(200)

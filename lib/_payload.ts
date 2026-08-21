@@ -4,23 +4,23 @@ import type {Response} from "express"
 import {Writable} from "node:stream"
 import {compressBuffer, decompressBuffer, findEncoding} from "./_compression.ts"
 
-type CallbackFn = (err?: Error) => void
+type CallbackFn = (err?: Error | null) => void
 type ChunkItem = [string | Buffer, BufferEncoding?, any?]
 
-function send(queue: ChunkItem[], dest: Writable, cb?: CallbackFn) {
-    let error: Error
+function send(queue: ChunkItem[], dest: Writable, cb?: CallbackFn | null) {
+    let error: Error | null | undefined
 
     if (queue.length === 1) {
         const item = queue[0]
         try {
-            dest.end(item[0], item[1], sendResult)
+            dest.end(item[0], item[1]!, sendResult)
         } catch (e) {
             catchError(e as Error)
         }
     } else {
         try {
             queue.forEach(item => {
-                if (!error) dest.write(item[0], item[1], catchError)
+                if (!error) dest.write(item[0], item[1]!, catchError)
             })
         } catch (e) {
             catchError(e as Error)
@@ -36,7 +36,7 @@ function send(queue: ChunkItem[], dest: Writable, cb?: CallbackFn) {
 
     if (cb) cb() // success callback
 
-    function catchError(e: Error) {
+    function catchError(e?: Error | null) {
         error = error || e
     }
 

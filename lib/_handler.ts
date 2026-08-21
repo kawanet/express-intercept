@@ -12,8 +12,8 @@ interface IReadable {
 }
 
 interface BuilderOptions {
-    _if: ((res: Response) => (boolean | Promise<boolean>))
-    _error: ErrorRequestHandler
+    _if?: ((res: Response) => (boolean | Promise<boolean>))
+    _error?: ErrorRequestHandler
 }
 
 export function buildResponseHandler<T extends IReadable>(
@@ -96,7 +96,7 @@ export function buildResponseHandler<T extends IReadable>(
         }
 
         function sendError(err?: Error) {
-            if (_error) _error(err, req, res, (e?: any): void => null)
+            if (_error) _error(err, req, res, (e?: any) => null)
         }
     }
 }

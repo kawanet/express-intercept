@@ -30,7 +30,7 @@ class RequestHandlerBuilder implements types.RequestHandlerBuilder {
         this._error = errorHandler
     }
 
-    _error: ErrorRequestHandler
+    _error?: ErrorRequestHandler
 
     /**
      * It appends a test condition to perform the RequestHandler.
@@ -43,7 +43,7 @@ class RequestHandlerBuilder implements types.RequestHandlerBuilder {
         return this
     }
 
-    _for: ((req: Request) => (boolean | Promise<boolean>))
+    _for?: ((req: Request) => (boolean | Promise<boolean>))
 
     /**
      * It returns a RequestHandler which connects multiple RequestHandlers.
@@ -93,7 +93,7 @@ class ResponseHandlerBuilder extends RequestHandlerBuilder implements types.Resp
         return this
     }
 
-    _if: ((res: Response) => (boolean | Promise<boolean>))
+    _if?: ((res: Response) => (boolean | Promise<boolean>))
 
     /**
      * It returns a RequestHandler to replace the response content body as a string.
@@ -186,10 +186,12 @@ class ResponseHandlerBuilder extends RequestHandlerBuilder implements types.Resp
      */
 
     compressResponse(): RequestHandler {
+        // replaceBuffer declares req/res optional for callers that ignore
+        // them; these handlers only run inside a response cycle.
         return this.replaceBuffer((buf, req, res) => {
-            const encoding = findEncoding(req.header("Accept-Encoding"))
+            const encoding = findEncoding(req!.header("Accept-Encoding"))
             if (encoding) {
-                res.setHeader("Content-Encoding", encoding) // signal to compress with the encoding
+                res!.setHeader("Content-Encoding", encoding) // signal to compress with the encoding
             }
             return buf
         })
@@ -201,7 +203,7 @@ class ResponseHandlerBuilder extends RequestHandlerBuilder implements types.Resp
 
     decompressResponse(): RequestHandler {
         return this.replaceBuffer((buf, req, res) => {
-            res.removeHeader("Content-Encoding") // signal NOT to compress
+            res!.removeHeader("Content-Encoding") // signal NOT to compress
             return buf
         })
     }
@@ -217,7 +219,7 @@ class ReadablePayload extends Readable {
  * @private
  */
 
-function AND<T>(A: CondFn<T>, B: CondFn<T>): CondFn<T> {
+function AND<T>(A: CondFn<T> | undefined, B: CondFn<T>): CondFn<T> {
     if (!A) return B
     if (!B) return A
 

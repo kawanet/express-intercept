@@ -39,9 +39,9 @@ export function runGetResponseTests(label: string, express: ExpressModule): void
             it("getString, getBuffer", async () => {
                 const app = express()
 
-                app.use(responseHandler().getString((str, req, res) => res.setHeader("x-string", str)))
+                app.use(responseHandler().getString((str, req, res) => res?.setHeader("x-string", str)))
 
-                app.use(responseHandler().getBuffer((buf, req, res) => res.setHeader("x-buffer", Buffer.from(buf).toString("hex"))))
+                app.use(responseHandler().getBuffer((buf, req, res) => res?.setHeader("x-buffer", Buffer.from(buf).toString("hex"))))
 
                 app.use((req, res) => res.send("FOO"))
 
