@@ -30,7 +30,7 @@ class RequestHandlerBuilder implements types.RequestHandlerBuilder {
         this._error = errorHandler
     }
 
-    _error?: ErrorRequestHandler
+    _error?: ErrorRequestHandler | undefined
 
     /**
      * It appends a test condition to perform the RequestHandler.

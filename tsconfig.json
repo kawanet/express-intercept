@@ -12,6 +12,7 @@
     "allowImportingTsExtensions": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
+    "exactOptionalPropertyTypes": true,
     "isolatedModules": true,
     "module": "ESNext",
     "moduleResolution": "bundler",

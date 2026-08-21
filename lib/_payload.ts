@@ -5,7 +5,7 @@ import {Writable} from "node:stream"
 import {compressBuffer, decompressBuffer, findEncoding} from "./_compression.ts"
 
 type CallbackFn = (err?: Error | null) => void
-type ChunkItem = [string | Buffer, BufferEncoding?, any?]
+type ChunkItem = [string | Buffer, (BufferEncoding | undefined)?, any?]
 
 function send(queue: ChunkItem[], dest: Writable, cb?: CallbackFn | null) {
     let error: Error | null | undefined
