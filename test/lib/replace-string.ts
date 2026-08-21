@@ -18,7 +18,7 @@ export function runReplaceStringTests(label: string, express: ExpressModule): vo
 
                 await mwsupertest(app)
                     .getResponse(res => assert.equal(+res.statusCode, 200))
-                    .getResponse(res => assert.equal(+res.getHeader("content-length"), expected.length))
+                    .getResponse(res => assert.equal(+res.getHeader("content-length")!, expected.length))
                     .getString(body => assert.equal(body, expected))
                     .get("/")
                     .expect(200)
@@ -34,7 +34,7 @@ export function runReplaceStringTests(label: string, express: ExpressModule): vo
 
                 await mwsupertest(app)
                     .getResponse(res => assert.equal(+res.statusCode, 200))
-                    .getResponse(res => assert.equal(+res.getHeader("content-length"), expected.length))
+                    .getResponse(res => assert.equal(+res.getHeader("content-length")!, expected.length))
                     .getString(body => assert.equal(body, expected))
                     .get("/")
                     .expect(200)
@@ -50,7 +50,7 @@ export function runReplaceStringTests(label: string, express: ExpressModule): vo
 
                 await mwsupertest(app)
                     .getResponse(res => assert.equal(+res.statusCode, 200))
-                    .getResponse(res => assert.equal(+res.getHeader("content-length") | 0, 0))
+                    .getResponse(res => assert.equal(+res.getHeader("content-length")! | 0, 0))
                     .getString(body => assert.equal(body, empty))
                     .get("/")
                     .expect(200)
@@ -66,7 +66,7 @@ export function runReplaceStringTests(label: string, express: ExpressModule): vo
 
                 await mwsupertest(app)
                     .getResponse(res => assert.equal(+res.statusCode, 200))
-                    .getResponse(res => assert.equal(+res.getHeader("content-length"), expected.length))
+                    .getResponse(res => assert.equal(+res.getHeader("content-length")!, expected.length))
                     .getString(body => assert.equal(body, expected))
                     .get("/")
                     .expect(200)
@@ -82,7 +82,7 @@ export function runReplaceStringTests(label: string, express: ExpressModule): vo
 
                 await mwsupertest(app)
                     .getResponse(res => assert.equal(+res.statusCode, 200))
-                    .getResponse(res => assert.equal(+res.getHeader("content-length"), expected.length))
+                    .getResponse(res => assert.equal(+res.getHeader("content-length")!, expected.length))
                     .getString(body => assert.equal(body, expected))
                     .get("/")
                     .expect(200)
