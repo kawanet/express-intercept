@@ -11,7 +11,7 @@ function send(queue: ChunkItem[], dest: Writable, cb?: CallbackFn | null) {
     let error: Error | null | undefined
 
     if (queue.length === 1) {
-        const item = queue[0]
+        const item = queue[0]!
         try {
             dest.end(item[0], item[1]!, sendResult)
         } catch (e) {
@@ -71,7 +71,7 @@ export class ResponsePayload {
         const buffers = queue.map(item => Buffer.isBuffer(item[0]) ? item[0] : Buffer.from(item[0], item[1]))
 
         // concat Buffer
-        let buffer = (buffers.length === 1) ? buffers[0] : Buffer.concat(buffers)
+        let buffer = (buffers.length === 1) ? buffers[0]! : Buffer.concat(buffers)
 
         // decompress Buffer
         const encoding = findEncoding(res.getHeader("Content-Encoding"))
