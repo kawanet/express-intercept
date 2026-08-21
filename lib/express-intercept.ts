@@ -80,7 +80,7 @@ class RequestHandlerBuilder implements types.RequestHandlerBuilder {
 }
 
 class ResponseHandlerBuilder extends RequestHandlerBuilder implements types.ResponseHandlerBuilder {
-    use: never
+    declare use: never
 
     /**
      * It appends a test condition to perform the RequestHandler.
