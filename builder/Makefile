@@ -1,5 +1,5 @@
 SRC   := $(wildcard ../lib/*.ts)
-TEST_SRC := $(wildcard ../test/*.test.ts)
+TEST_SRC := $(wildcard ../test/*.test.ts ../test/lib/*.ts)
 TYPES := $(wildcard ../types/*.d.ts)
 BUILDER_SRC := $(wildcard ./*.ts)
 
