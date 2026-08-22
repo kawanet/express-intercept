@@ -13,6 +13,8 @@
     "async-request-handler": "^1.1.2"
   },
   "devDependencies": {
+    "@rollup/plugin-alias": "^6.0.0",
+    "@rollup/plugin-multi-entry": "^7.1.0",
     "@rollup/plugin-node-resolve": "^16.0.3",
     "@rollup/plugin-sucrase": "^5.1.0",
     "@types/express": "^4",
@@ -36,7 +38,7 @@
     }
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=18"
   },
   "exports": {
     ".": {
@@ -75,6 +77,7 @@
     "prepack": "make -C builder is-buildable",
     "prepare": "make -C builder is-not-buildable 2> /dev/null || make -C builder clean all test",
     "test": "make -C builder test",
+    "test-bundled": "node --test builder/tests/bundled.js",
     "ts-refine": "./node_modules/.bin/ts-refine format && ./node_modules/.bin/ts-refine imports"
   },
   "sideEffects": false,
