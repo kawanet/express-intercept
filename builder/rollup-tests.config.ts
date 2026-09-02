@@ -5,8 +5,10 @@ import sucrase from "@rollup/plugin-sucrase"
 import type {RollupOptions} from "rollup"
 import {showFiles} from "./show-files.ts"
 
-// Bundles the test suites into a single plain-JS file, so any supported
-// Node.js runtime can run them against dist/ without needing type-strip.
+// Bundles the test suites into a single plain-JS file that imports the
+// package by name, so any supported Node.js runtime can run them against
+// dist/ without needing type-strip. The .mjs suffix keeps the bundle ESM
+// even where no package.json is present to say so.
 const rollupConfig: RollupOptions = {
     input: "../test/*.test.ts",
 
@@ -14,7 +16,7 @@ const rollupConfig: RollupOptions = {
     external: /^[^.\/]/,
 
     output: {
-        file: "./tests/bundled.js",
+        file: "./tests/bundled.mjs",
         format: "esm",
     },
 
