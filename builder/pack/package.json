@@ -1,5 +1,5 @@
 {
-  "dependencies": {
+  "devDependencies": {
     "express4": "npm:express@^4",
     "express5": "npm:express@^5",
     "middleware-supertest": "^1.2.3"
